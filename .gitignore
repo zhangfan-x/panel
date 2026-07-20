@@ -1,0 +1,28 @@
+# third-party reference clones, never commit
+reference/
+
+# agent tool dirs
+.agents/
+.codex/
+.claude/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+backend/data-dev/
+
+# node
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# runtime data (never in git)
+data/
+*.db
+*.db-wal
+*.db-shm

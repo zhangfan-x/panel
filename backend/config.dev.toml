@@ -1,0 +1,12 @@
+# Development configuration: plain HTTP on loopback only.
+# Production config lives in /etc/mypanel/config.toml (see deploy/config.example.toml).
+
+[server]
+host = "127.0.0.1"
+port = 25443
+dev_http = true
+
+[paths]
+data_dir = "./data-dev"
+helper_socket = "/tmp/mypanel-helper-dev.sock"
+terminal_socket = "/tmp/mypanel-terminal-dev.sock"
