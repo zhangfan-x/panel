@@ -45,6 +45,8 @@ class PathsConfig(BaseModel):
     data_dir: Path = Path("/opt/mypanel/data")
     helper_socket: Path = Path("/run/mypanel/helper.sock")
     terminal_socket: Path = Path("/run/mypanel/terminal.sock")
+    # Built frontend to serve as an SPA; None (dev) leaves static serving to Vite.
+    static_dir: Path | None = None
 
 
 class LimitsConfig(BaseModel):

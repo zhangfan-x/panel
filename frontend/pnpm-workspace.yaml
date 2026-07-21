@@ -1,0 +1,8 @@
+# 本环境的供应链策略层要求对有安装脚本的依赖显式声明是否放行。
+# esbuild 需安装平台原生二进制；vue-demi 需按 Vue 版本切换 shim。二者均为构建必需，放行。
+allowBuilds:
+  esbuild: true
+  vue-demi: true
+onlyBuiltDependencies:
+  - esbuild
+  - vue-demi
