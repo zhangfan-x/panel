@@ -16,8 +16,8 @@ export interface Problem {
   retry_after?: number
 }
 
-/** 会话状态机：密码通过待验证 TOTP → 待绑定 TOTP → 已激活。 */
-export type SessionState = 'mfa_pending' | 'totp_enroll' | 'active'
+/** 会话状态。当前只有 active；TOTP 两步验证作为后续补充特性时会扩展此联合类型。 */
+export type SessionState = 'active'
 
 export interface SessionUser {
   id: number
@@ -32,7 +32,7 @@ export interface SessionResponse {
   reauth_recent: boolean
 }
 
-/** 多个端点统一返回下一步会话状态（login / totp verify / totp confirm / bootstrap owner）。 */
+/** 多个端点统一返回下一步会话状态（login / bootstrap owner）。 */
 export interface SessionStateResponse {
   session_state: SessionState
 }
@@ -53,22 +53,6 @@ export interface BootstrapOwnerRequest {
 export interface LoginRequest {
   username: string
   password: string
-}
-
-/** POST /auth/totp/verify */
-export interface TotpVerifyRequest {
-  code: string
-}
-
-/** POST /auth/totp/setup → 返回密钥与 otpauth URI（供 TOTP 应用扫码或手动录入）。 */
-export interface TotpSetupResponse {
-  secret: string
-  otpauth_uri: string
-}
-
-/** POST /auth/totp/confirm */
-export interface TotpConfirmRequest {
-  code: string
 }
 
 /** GET /system/info */

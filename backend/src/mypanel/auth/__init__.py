@@ -1,4 +1,4 @@
-"""Authentication: bootstrap, login state machine, sessions, TOTP, re-authentication."""
+"""Authentication: bootstrap, login, sessions, re-authentication."""
 
 from __future__ import annotations
 

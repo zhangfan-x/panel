@@ -247,7 +247,7 @@ def test_list_on_regular_file_is_not_a_directory(helper: HelperClient, tmp_path:
 
 def test_unknown_action(helper: HelperClient) -> None:
     with pytest.raises(HelperActionError) as excinfo:
-        helper.call("files.chmod", {"path": "/etc"})
+        helper.call("files.nonexistent_action", {"path": "/etc"})
     assert excinfo.value.helper_code == "helper.unknown_action"
 
 

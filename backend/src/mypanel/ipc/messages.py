@@ -16,6 +16,11 @@ HELPER_NOT_A_DIRECTORY = "helper.not_a_directory"
 HELPER_DENIED = "helper.denied"
 HELPER_TIMEOUT = "helper.timeout"
 HELPER_PROTOCOL = "helper.protocol"
+HELPER_CONFLICT = "helper.conflict"
+HELPER_UNSUPPORTED = "helper.unsupported"
+HELPER_TOO_LARGE = "helper.too_large"
+HELPER_NOT_FOUND = "helper.not_found"
+HELPER_DOCKER_UNAVAILABLE = "helper.docker_unavailable"
 
 
 class HelperRequest(BaseModel):

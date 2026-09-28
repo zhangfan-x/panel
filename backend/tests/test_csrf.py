@@ -11,8 +11,6 @@ All scenarios build on the ``owner`` fixture's ACTIVE session:
 * a valid CSRF token does not bypass the Host/Origin middleware: an evil or absent
   Origin is rejected with ``request.bad_origin`` before any handler runs;
 * CSRF tokens are bound to their session — another session's token is rejected;
-* an ``mfa_pending`` session can log itself out with its own token (logout is
-  allowed in any session state);
 * safe methods (GET) require no CSRF token at all.
 """
 
@@ -22,7 +20,6 @@ import secrets
 from typing import Any
 
 import httpx
-import pyotp
 import pytest
 from conftest import API, BASE_URL, ORIGIN, OWNER_PASSWORD, OwnerContext, csrf_headers
 from fastapi import FastAPI
@@ -68,17 +65,17 @@ def make_extra_client(
     )
 
 
-async def login_mfa_pending(second: httpx.AsyncClient, owner: OwnerContext) -> str:
-    """Password-only login on ``second``; returns the mfa_pending session's CSRF token."""
+async def login_second_session(second: httpx.AsyncClient, owner: OwnerContext) -> str:
+    """Password login on ``second``; returns the new active session's CSRF token."""
     resp = await second.post(
         f"{API}/auth/login", json={"username": owner.username, "password": owner.password}
     )
     assert resp.status_code == 200, resp.text
-    assert resp.json()["session_state"] == "mfa_pending"
+    assert resp.json()["session_state"] == "active"
     resp = await second.get(SESSION)
     assert resp.status_code == 200, resp.text
     body = resp.json()
-    assert body["session_state"] == "mfa_pending"
+    assert body["session_state"] == "active"
     token: str = body["csrf_token"]
     return token
 
@@ -123,7 +120,7 @@ async def test_logout_with_valid_csrf_token(client: httpx.AsyncClient, owner: Ow
 @pytest.mark.parametrize(
     ("method", "path", "json_body"),
     [
-        ("POST", REAUTH, {"password": OWNER_PASSWORD, "code": "000000"}),
+        ("POST", REAUTH, {"password": OWNER_PASSWORD}),
         ("DELETE", f"{API}/auth/sessions/999999", None),
         # No recent re-auth either — csrf.invalid (not auth.reauth_required) proves
         # the CSRF dependency is evaluated first.
@@ -149,9 +146,8 @@ async def test_mutations_without_csrf_token_rejected(
 async def test_reauth_without_csrf_never_reaches_credentials(
     client: httpx.AsyncClient, owner: OwnerContext
 ) -> None:
-    """Even fully correct credentials are ignored when the CSRF header is missing."""
-    code = pyotp.TOTP(owner.totp_secret).now()
-    resp = await client.post(REAUTH, json={"password": owner.password, "code": code})
+    """Even the fully correct password is ignored when the CSRF header is missing."""
+    resp = await client.post(REAUTH, json={"password": owner.password})
     assert_problem(resp, status=403, code="csrf.invalid")
     # The re-auth window must not have opened.
     resp = await client.get(SESSION)
@@ -190,7 +186,7 @@ async def test_csrf_token_is_bound_to_its_session(
     app: FastAPI, client: httpx.AsyncClient, owner: OwnerContext
 ) -> None:
     async with make_extra_client(app) as second:
-        other_csrf = await login_mfa_pending(second, owner)
+        other_csrf = await login_second_session(second, owner)
         assert other_csrf != owner.csrf_token
         # The second session's token on the first session's request...
         resp = await client.post(LOGOUT, headers={CSRF_HEADER: other_csrf})
@@ -200,21 +196,6 @@ async def test_csrf_token_is_bound_to_its_session(
         assert_problem(resp, status=403, code="csrf.invalid")
         # Both sessions survived the mismatched attempts.
         assert (await second.get(SESSION)).status_code == 200
-    resp = await client.get(SESSION)
-    assert resp.status_code == 200
-    assert resp.json()["session_state"] == "active"
-
-
-async def test_mfa_pending_session_can_logout_with_its_csrf(
-    app: FastAPI, client: httpx.AsyncClient, owner: OwnerContext
-) -> None:
-    async with make_extra_client(app) as second:
-        pending_csrf = await login_mfa_pending(second, owner)
-        resp = await second.post(LOGOUT, headers={CSRF_HEADER: pending_csrf})
-        assert resp.status_code == 204, resp.text
-        resp = await second.get(SESSION)
-        assert_problem(resp, status=401, code="auth.required")
-    # The owner's original active session is untouched.
     resp = await client.get(SESSION)
     assert resp.status_code == 200
     assert resp.json()["session_state"] == "active"

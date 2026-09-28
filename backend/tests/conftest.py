@@ -40,7 +40,6 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-import pyotp
 import pytest
 from fastapi import FastAPI
 
@@ -65,7 +64,6 @@ class OwnerContext:
 
     username: str
     password: str
-    totp_secret: str
     csrf_token: str
 
 
@@ -171,10 +169,10 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
 async def owner(app: FastAPI, client: httpx.AsyncClient) -> OwnerContext:
     """Bootstrapped owner with an ACTIVE session held by ``client``.
 
-    Flow: issue a bootstrap token at service level -> POST /bootstrap/owner ->
-    POST /auth/totp/setup -> POST /auth/totp/confirm (session becomes active) ->
-    GET /auth/session for the CSRF token. The session cookie ends up in
-    ``client.cookies``; pass ``csrf_headers(owner)`` on state-changing requests.
+    Flow: issue a bootstrap token at service level -> POST /bootstrap/owner
+    (session is active immediately) -> GET /auth/session for the CSRF token.
+    The session cookie ends up in ``client.cookies``; pass
+    ``csrf_headers(owner)`` on state-changing requests.
     """
     async with app.state.sessionmaker() as db:
         token = await AuthService(db, app.state.settings).issue_bootstrap_token()
@@ -184,15 +182,6 @@ async def owner(app: FastAPI, client: httpx.AsyncClient) -> OwnerContext:
         json={"token": token, "username": OWNER_USERNAME, "password": OWNER_PASSWORD},
     )
     assert resp.status_code == 200, f"bootstrap/owner failed: {resp.status_code} {resp.text}"
-    assert resp.json()["session_state"] == "totp_enroll"
-
-    resp = await client.post(f"{API}/auth/totp/setup")
-    assert resp.status_code == 200, f"totp/setup failed: {resp.status_code} {resp.text}"
-    secret = resp.json()["secret"]
-
-    code = pyotp.TOTP(secret).now()
-    resp = await client.post(f"{API}/auth/totp/confirm", json={"code": code})
-    assert resp.status_code == 200, f"totp/confirm failed: {resp.status_code} {resp.text}"
     assert resp.json()["session_state"] == "active"
 
     resp = await client.get(f"{API}/auth/session")
@@ -202,6 +191,5 @@ async def owner(app: FastAPI, client: httpx.AsyncClient) -> OwnerContext:
     return OwnerContext(
         username=OWNER_USERNAME,
         password=OWNER_PASSWORD,
-        totp_secret=secret,
         csrf_token=body["csrf_token"],
     )

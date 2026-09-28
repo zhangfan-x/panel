@@ -4,9 +4,6 @@ import { createPinia, setActivePinia } from 'pinia'
 vi.mock('@/api/auth', () => ({
   getSession: vi.fn(),
   login: vi.fn(),
-  verifyTotp: vi.fn(),
-  setupTotp: vi.fn(),
-  confirmTotp: vi.fn(),
   logout: vi.fn(),
 }))
 vi.mock('@/api/bootstrap', () => ({

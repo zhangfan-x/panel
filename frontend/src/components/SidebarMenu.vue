@@ -14,6 +14,11 @@ import {
   Monitor,
   Document,
   Setting,
+  Platform,
+  Link,
+  Lock,
+  Share,
+  CircleCheck,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -67,7 +72,33 @@ const route = useRoute()
           <el-icon><Tickets /></el-icon>
           <span>Compose</span>
         </el-menu-item>
+        <el-menu-item index="/docker/daemon">
+          <el-icon><Setting /></el-icon>
+          <span>Docker 配置</span>
+        </el-menu-item>
       </el-sub-menu>
+      <el-sub-menu index="website">
+        <template #title>
+          <el-icon><Platform /></el-icon>
+          <span>网站</span>
+        </template>
+        <el-menu-item index="/website/sites">
+          <el-icon><Link /></el-icon>
+          <span>站点</span>
+        </el-menu-item>
+        <el-menu-item index="/website/certs">
+          <el-icon><Lock /></el-icon>
+          <span>证书</span>
+        </el-menu-item>
+        <el-menu-item index="/website/firewall">
+          <el-icon><CircleCheck /></el-icon>
+          <span>防火墙</span>
+        </el-menu-item>
+      </el-sub-menu>
+      <el-menu-item index="/proxy">
+        <el-icon><Share /></el-icon>
+        <span>代理</span>
+      </el-menu-item>
       <el-menu-item index="/tasks">
         <el-icon><List /></el-icon>
         <span>任务</span>

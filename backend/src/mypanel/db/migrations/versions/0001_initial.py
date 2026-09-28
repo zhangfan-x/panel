@@ -49,19 +49,6 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_sessions_token_hash"), "sessions", ["token_hash"], unique=True)
     op.create_table(
-        "mfa_devices",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("kind", sa.String(length=16), nullable=False),
-        sa.Column("secret", sa.String(length=64), nullable=False),
-        sa.Column("confirmed_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["user_id"], ["users.id"], name=op.f("fk_mfa_devices_user_id_users")
-        ),
-        sa.PrimaryKeyConstraint("id", name=op.f("pk_mfa_devices")),
-    )
-    op.create_table(
         "settings",
         sa.Column("key", sa.String(length=128), nullable=False),
         sa.Column("value", sa.Text(), nullable=False),
@@ -157,7 +144,6 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_audit_logs_ts"), table_name="audit_logs")
     op.drop_table("audit_logs")
     op.drop_table("settings")
-    op.drop_table("mfa_devices")
     op.drop_index(op.f("ix_sessions_token_hash"), table_name="sessions")
     op.drop_table("sessions")
     op.drop_table("users")

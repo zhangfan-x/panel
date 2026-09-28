@@ -68,8 +68,8 @@ async function handleSubmit(): Promise<void> {
       username: form.username,
       password: form.password,
     })
-    ElMessage.success('初始化成功，请继续绑定两步验证')
-    await router.push({ name: 'totp-enroll' })
+    ElMessage.success('初始化成功')
+    await router.push({ name: 'dashboard' })
   } catch (error) {
     ElMessage.error(problemMessage(error, '初始化失败，请检查令牌是否有效'))
   } finally {

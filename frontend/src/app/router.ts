@@ -3,7 +3,6 @@ import type { RouteRecordRaw } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
 import AppLayout from '@/layouts/AppLayout.vue'
-import PlaceholderPage from '@/components/PlaceholderPage.vue'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -11,20 +10,10 @@ declare module 'vue-router' {
     public?: boolean
     /** 仅未登录可访问；已登录访问时重定向到仪表盘。 */
     guestOnly?: boolean
-    /** 受保护路由，需要 active 会话（守卫会处理 totp_enroll/mfa_pending 的中间态）。 */
+    /** 受保护路由，需要 active 会话。 */
     requiresAuth?: boolean
     /** 侧边菜单/占位页显示的标题。 */
     title?: string
-  }
-}
-
-/** 生成一个占位路由记录（统一使用 PlaceholderPage）。 */
-function placeholder(path: string, name: string, title: string): RouteRecordRaw {
-  return {
-    path,
-    name,
-    component: PlaceholderPage,
-    meta: { requiresAuth: true, title },
   }
 }
 
@@ -47,29 +36,113 @@ const routes: RouteRecordRaw[] = [
     component: AppLayout,
     children: [
       {
-        path: 'security/totp',
-        name: 'totp-enroll',
-        component: () => import('@/features/auth/TotpEnrollPage.vue'),
-        meta: { requiresAuth: true, title: '绑定两步验证' },
-      },
-      {
         path: 'dashboard',
         name: 'dashboard',
         component: () => import('@/features/dashboard/DashboardPage.vue'),
         meta: { requiresAuth: true, title: '仪表盘' },
       },
-      placeholder('host/processes', 'host-processes', '进程管理'),
-      placeholder('host/services', 'host-services', '服务管理'),
-      placeholder('files', 'files', '文件管理'),
-      placeholder('docker/containers', 'docker-containers', '容器'),
-      placeholder('docker/images', 'docker-images', '镜像'),
-      placeholder('docker/networks', 'docker-networks', '网络'),
-      placeholder('docker/volumes', 'docker-volumes', '卷'),
-      placeholder('docker/compose', 'docker-compose', 'Compose 项目'),
-      placeholder('tasks', 'tasks', '任务中心'),
-      placeholder('terminal', 'terminal', 'root 终端'),
-      placeholder('audit', 'audit', '审计日志'),
-      placeholder('settings', 'settings', '设置'),
+      {
+        path: 'host/processes',
+        name: 'host-processes',
+        component: () => import('@/features/host/ProcessesPage.vue'),
+        meta: { requiresAuth: true, title: '进程管理' },
+      },
+      {
+        path: 'host/services',
+        name: 'host-services',
+        component: () => import('@/features/host/ServicesPage.vue'),
+        meta: { requiresAuth: true, title: '服务管理' },
+      },
+      {
+        path: 'files',
+        name: 'files',
+        component: () => import('@/features/files/FilesPage.vue'),
+        meta: { requiresAuth: true, title: '文件管理' },
+      },
+      {
+        path: 'docker/containers',
+        name: 'docker-containers',
+        component: () => import('@/features/docker/ContainersPage.vue'),
+        meta: { requiresAuth: true, title: '容器' },
+      },
+      {
+        path: 'docker/images',
+        name: 'docker-images',
+        component: () => import('@/features/docker/ImagesPage.vue'),
+        meta: { requiresAuth: true, title: '镜像' },
+      },
+      {
+        path: 'docker/networks',
+        name: 'docker-networks',
+        component: () => import('@/features/docker/NetworksPage.vue'),
+        meta: { requiresAuth: true, title: '网络' },
+      },
+      {
+        path: 'docker/volumes',
+        name: 'docker-volumes',
+        component: () => import('@/features/docker/VolumesPage.vue'),
+        meta: { requiresAuth: true, title: '卷' },
+      },
+      {
+        path: 'docker/compose',
+        name: 'docker-compose',
+        component: () => import('@/features/docker/ComposePage.vue'),
+        meta: { requiresAuth: true, title: 'Compose 项目' },
+      },
+      {
+        path: 'docker/daemon',
+        name: 'docker-daemon',
+        component: () => import('@/features/docker/DaemonConfigPage.vue'),
+        meta: { requiresAuth: true, title: 'Docker 配置' },
+      },
+      {
+        path: 'website/sites',
+        name: 'website-sites',
+        component: () => import('@/features/website/SitesPage.vue'),
+        meta: { requiresAuth: true, title: '站点' },
+      },
+      {
+        path: 'website/certs',
+        name: 'website-certs',
+        component: () => import('@/features/website/CertsPage.vue'),
+        meta: { requiresAuth: true, title: '证书' },
+      },
+      {
+        path: 'website/firewall',
+        name: 'website-firewall',
+        component: () => import('@/features/website/FirewallPage.vue'),
+        meta: { requiresAuth: true, title: '防火墙' },
+      },
+      {
+        path: 'proxy',
+        name: 'proxy',
+        component: () => import('@/features/proxy/ProxyPage.vue'),
+        meta: { requiresAuth: true, title: '代理管理' },
+      },
+      {
+        path: 'tasks',
+        name: 'tasks',
+        component: () => import('@/features/tasks/TasksPage.vue'),
+        meta: { requiresAuth: true, title: '任务中心' },
+      },
+      {
+        path: 'terminal',
+        name: 'terminal',
+        component: () => import('@/features/terminal/TerminalPage.vue'),
+        meta: { requiresAuth: true, title: 'root 终端' },
+      },
+      {
+        path: 'audit',
+        name: 'audit',
+        component: () => import('@/features/audit/AuditPage.vue'),
+        meta: { requiresAuth: true, title: '审计日志' },
+      },
+      {
+        path: 'settings',
+        name: 'settings',
+        component: () => import('@/features/settings/SettingsPage.vue'),
+        meta: { requiresAuth: true, title: '设置' },
+      },
     ],
   },
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
@@ -83,9 +156,8 @@ export const router = createRouter({
 /**
  * 全局守卫。
  * 1) 首次进入先确保会话已探测（fetchSession）。
- * 2) totp_enroll 会话强制停留在绑定页；mfa_pending 会话回登录页完成第二步。
- * 3) 已登录访问 /login、/setup → 跳仪表盘。
- * 4) 受保护路由未登录 → 由 /bootstrap/state 决定去 /setup 还是 /login。
+ * 2) 已登录访问 /login、/setup → 跳仪表盘。
+ * 3) 受保护路由未登录 → 由 /bootstrap/state 决定去 /setup 还是 /login。
  */
 router.beforeEach(async (to) => {
   const auth = useAuthStore()
@@ -93,16 +165,7 @@ router.beforeEach(async (to) => {
     await auth.fetchSession()
   }
 
-  const state = auth.sessionState
-  const isActive = state === 'active'
-
-  if (state === 'totp_enroll') {
-    return to.name === 'totp-enroll' ? true : { name: 'totp-enroll' }
-  }
-
-  if (state === 'mfa_pending') {
-    return to.name === 'login' ? true : { name: 'login' }
-  }
+  const isActive = auth.sessionState === 'active'
 
   if (isActive && to.meta.guestOnly) {
     return { name: 'dashboard' }

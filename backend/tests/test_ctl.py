@@ -79,7 +79,7 @@ def env(tmp_path: Path) -> CtlEnv:
 
 
 def seed_owner(db_path: Path) -> None:
-    """Insert the owner (known Argon2 hash), two live sessions, one confirmed TOTP device."""
+    """Insert the owner (known Argon2 hash) and two live sessions."""
     now = datetime.now(tz=UTC)
     conn = sqlite3.connect(str(db_path))
     try:
@@ -109,11 +109,6 @@ def seed_owner(db_path: Path) -> None:
                         _ts(now + timedelta(hours=11)),
                     ),
                 )
-            conn.execute(
-                "INSERT INTO mfa_devices (user_id, kind, secret, confirmed_at, created_at)"
-                " VALUES (?, 'totp', 'JBSWY3DPEHPK3PXP', ?, ?)",
-                (owner_id, _ts(now - timedelta(days=29)), _ts(now - timedelta(days=29))),
-            )
     finally:
         conn.close()
 
@@ -138,7 +133,6 @@ def db_snapshot(db_path: Path) -> tuple[Any, ...]:
     return (
         *fetch_one(db_path, "SELECT password_hash, password_changed_at FROM users"),
         fetch_one(db_path, "SELECT COUNT(*) FROM sessions WHERE revoked_at IS NULL")[0],
-        fetch_one(db_path, "SELECT COUNT(*) FROM mfa_devices")[0],
         fetch_one(db_path, "SELECT COUNT(*) FROM audit_logs")[0],
     )
 
@@ -185,7 +179,6 @@ class TestResetOwner:
         assert not verify_password(OLD_PASSWORD, new_hash)
         assert _parse_ts(changed_at) > changed_before
 
-        assert fetch_one(env.db_path, "SELECT COUNT(*) FROM mfa_devices")[0] == 0
         assert fetch_one(env.db_path, "SELECT COUNT(*) FROM sessions")[0] == 2
         revoked = fetch_rows(env.db_path, "SELECT revoked_at FROM sessions")
         assert all(row[0] is not None for row in revoked)
@@ -262,11 +255,11 @@ class TestResetOwner:
         assert code == 1
         assert "no owner account" in capsys.readouterr().err
 
-    async def test_new_password_logs_in_and_reenrolls_totp(
+    async def test_new_password_logs_in(
         self, env: CtlEnv, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
     ) -> None:
         """Recovery closure: after reset the old password is dead and the new one
-        opens a ``totp_enroll`` session (MFA devices were wiped)."""
+        opens an ``active`` session."""
         seed_owner(env.db_path)
         monkeypatch.setattr("os.geteuid", lambda: 0)
         code = run_ctl(monkeypatch, "reset-owner", "--config", str(env.config_path), "--force")
@@ -285,7 +278,7 @@ class TestResetOwner:
                 session, raw_token = await AuthService(db, env.settings).login(
                     OWNER, new_password, ip="127.0.0.1", user_agent="pytest"
                 )
-            assert session.state == "totp_enroll"
+            assert session.state == "active"
             assert raw_token
         finally:
             await engine.dispose()

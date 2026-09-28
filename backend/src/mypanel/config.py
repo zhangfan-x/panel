@@ -66,11 +66,55 @@ class DockerConfig(BaseModel):
     compose_root: Path = Path("/opt/compose")
 
 
+class WebsiteConfig(BaseModel):
+    # nginx lives under root ownership, so all edits go through the helper.
+    nginx_dir: Path = Path("/etc/nginx")
+    cert_dir: Path = Path("/etc/nginx/mypanel-certs")
+
+
+class ProxyConfig(BaseModel):
+    # Clash/Mihomo external controller (RESTful API) and its config file. The
+    # config file is owned by the API user, so the API edits it directly; the
+    # controller is a localhost HTTP API (optionally token-protected).
+    clash_api: str = "http://127.0.0.1:9090"
+    clash_secret: str = ""
+    clash_config: Path | None = None
+    # Latency-probe target. The default is Clash's conventional generate_204
+    # endpoint; behind a restrictive network it may be unreachable and make
+    # every node look dead, so it is overridable (e.g. cp.cloudflare.com).
+    # Group tests prefer the group's own `testUrl` when the controller reports one.
+    delay_test_url: str = "http://www.gstatic.com/generate_204"
+    # The clash core runs as a per-user systemd unit owned by the API user, so
+    # on/off is `systemctl --user start|stop|restart <clash_service>` run
+    # directly by the API (no root/helper needed).
+    clash_service: str = "clash.service"
+    # Subscription import: how long to wait for a remote config, and the
+    # User-Agent to announce. Most airports switch response format on the UA,
+    # so a clash-shaped default is what actually yields a Clash config.
+    subscription_timeout_s: float = 30.0
+    subscription_user_agent: str = "clash-verge/v2.0.0"
+    # Subscriptions are downloaded directly first — that is the fast path and the
+    # only one that works on a fresh install with no usable nodes yet. When the
+    # direct attempt fails (airport dashboards are routinely blocked on the very
+    # network that needs them), the download is retried through this proxy.
+    # "auto" discovers the running core's own listen port from the controller;
+    # "none"/"" disables the retry; anything else is a proxy URL used verbatim.
+    subscription_fallback_proxy: str = "auto"
+    # Extend script (QuickJS) sandbox budget. The time limit is enforced by the
+    # interpreter's interrupt handler, so a runaway script is always stoppable.
+    script_timeout_s: float = 5.0
+    script_memory_limit_mb: int = 64
+    # How often the background scheduler checks for subscriptions due a refresh.
+    subscription_check_interval_s: float = 60.0
+
+
 class Settings(BaseModel):
     server: ServerConfig = Field(default_factory=ServerConfig)
     paths: PathsConfig = Field(default_factory=PathsConfig)
     limits: LimitsConfig = Field(default_factory=LimitsConfig)
     docker: DockerConfig = Field(default_factory=DockerConfig)
+    website: WebsiteConfig = Field(default_factory=WebsiteConfig)
+    proxy: ProxyConfig = Field(default_factory=ProxyConfig)
 
     @classmethod
     def load(cls, path: str | Path | None = None) -> Settings:

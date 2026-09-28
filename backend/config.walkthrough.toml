@@ -1,0 +1,26 @@
+# Walkthrough config: dev HTTP on loopback, API also serves the built SPA
+# (static_dir) so the whole panel is reachable on a single port (25443).
+# Helper/terminal run as root over the dev sockets below.
+
+[server]
+host = "127.0.0.1"
+port = 25443
+dev_http = true
+
+[paths]
+data_dir = "/home/zhangfan/work/panel/backend/data-dev"
+helper_socket = "/tmp/mypanel-helper-dev.sock"
+terminal_socket = "/tmp/mypanel-terminal-dev.sock"
+static_dir = "/home/zhangfan/work/panel/frontend/dist"
+
+[docker]
+compose_root = "/home/zhangfan/work/panel/backend/data-dev/compose"
+
+[website]
+nginx_dir = "/etc/nginx"
+cert_dir = "/etc/nginx/mypanel-certs"
+
+[proxy]
+clash_api = "http://127.0.0.1:9090"
+clash_config = "/home/zhangfan/.config/clash/config.yaml"
+clash_service = "clash.service"

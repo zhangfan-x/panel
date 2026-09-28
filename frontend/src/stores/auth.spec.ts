@@ -8,9 +8,6 @@ import type { SessionResponse } from '@/api/types'
 vi.mock('@/api/auth', () => ({
   getSession: vi.fn(),
   login: vi.fn(),
-  verifyTotp: vi.fn(),
-  setupTotp: vi.fn(),
-  confirmTotp: vi.fn(),
   logout: vi.fn(),
 }))
 vi.mock('@/api/bootstrap', () => ({
@@ -66,36 +63,29 @@ describe('auth store', () => {
     expect(auth.loaded).toBe(true)
   })
 
-  it('登录进入 mfa_pending，再经 TOTP 校验升级为 active', async () => {
+  it('登录成功后会话为 active 并写入 CSRF token', async () => {
     const auth = useAuthStore()
 
-    vi.mocked(authApi.login).mockResolvedValue({ session_state: 'mfa_pending' })
+    vi.mocked(authApi.login).mockResolvedValue({ session_state: 'active' })
     vi.mocked(authApi.getSession).mockResolvedValue(
-      sessionResponse({ session_state: 'mfa_pending', csrf_token: 'csrf-1' }),
+      sessionResponse({ session_state: 'active', csrf_token: 'csrf-1' }),
     )
     const afterLogin = await auth.login('admin', 'a-very-strong-password')
-    expect(afterLogin).toBe('mfa_pending')
-    expect(auth.sessionState).toBe('mfa_pending')
-    expect(auth.csrfToken).toBe('csrf-1')
-    expect(auth.isAuthenticated).toBe(false)
-
-    vi.mocked(authApi.verifyTotp).mockResolvedValue({ session_state: 'active' })
-    vi.mocked(authApi.getSession).mockResolvedValue(
-      sessionResponse({ session_state: 'active', csrf_token: 'csrf-2' }),
-    )
-    const afterVerify = await auth.verifyTotp('123456')
-    expect(afterVerify).toBe('active')
+    expect(afterLogin).toBe('active')
     expect(auth.sessionState).toBe('active')
-    expect(auth.csrfToken).toBe('csrf-2')
+    expect(auth.csrfToken).toBe('csrf-1')
     expect(auth.isAuthenticated).toBe(true)
-    expect(vi.mocked(authApi.verifyTotp)).toHaveBeenCalledWith({ code: '123456' })
+    expect(vi.mocked(authApi.login)).toHaveBeenCalledWith({
+      username: 'admin',
+      password: 'a-very-strong-password',
+    })
   })
 
-  it('创建 Owner 后进入 totp_enroll 状态', async () => {
+  it('创建 Owner 后会话为 active', async () => {
     const auth = useAuthStore()
-    vi.mocked(bootstrapApi.createOwner).mockResolvedValue({ session_state: 'totp_enroll' })
+    vi.mocked(bootstrapApi.createOwner).mockResolvedValue({ session_state: 'active' })
     vi.mocked(authApi.getSession).mockResolvedValue(
-      sessionResponse({ session_state: 'totp_enroll', csrf_token: 'csrf-enroll' }),
+      sessionResponse({ session_state: 'active', csrf_token: 'csrf-owner' }),
     )
 
     const state = await auth.createOwner({
@@ -104,9 +94,9 @@ describe('auth store', () => {
       password: 'a-very-strong-password',
     })
 
-    expect(state).toBe('totp_enroll')
-    expect(auth.sessionState).toBe('totp_enroll')
-    expect(auth.csrfToken).toBe('csrf-enroll')
+    expect(state).toBe('active')
+    expect(auth.sessionState).toBe('active')
+    expect(auth.csrfToken).toBe('csrf-owner')
     expect(vi.mocked(bootstrapApi.createOwner)).toHaveBeenCalledOnce()
   })
 

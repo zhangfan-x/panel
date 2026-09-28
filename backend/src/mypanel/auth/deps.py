@@ -3,12 +3,12 @@
 App state contract (provided by the app factory): ``app.state.sessionmaker``
 (``async_sessionmaker[AsyncSession]``), ``app.state.settings`` (``Settings``)
 and ``app.state.limiters`` (``dict[str, SlidingWindowLimiter]`` with keys
-``login_ip``/``login_user``/``totp``/``reauth``).
+``login_ip``/``login_user``/``reauth``).
 """
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Annotated
 
@@ -99,20 +99,6 @@ async def require_active_session(
     return auth
 
 
-def require_state(*states: SessionState) -> Callable[[CurrentAuth], CurrentAuth]:
-    """Build a dependency that only admits sessions in one of `states`."""
-    allowed = {state.value for state in states}
-
-    def dependency(auth: Annotated[CurrentAuth, Depends(require_session)]) -> CurrentAuth:
-        if auth.session.state not in allowed:
-            raise SessionStateError(
-                f"This endpoint requires session state: {', '.join(sorted(allowed))}."
-            )
-        return auth
-
-    return dependency
-
-
 async def require_csrf(
     request: Request,
     auth: Annotated[CurrentAuth, Depends(require_session)],
@@ -141,3 +127,39 @@ async def require_recent_reauth(
     """
     if not service.has_recent_reauth(auth.session):
         raise ReauthRequiredError()
+
+
+# Reusable Annotated dependency aliases for feature routers (import from here).
+DbDep = Annotated[AsyncSession, Depends(get_db)]
+SettingsDep = Annotated[Settings, Depends(get_settings_from_app)]
+LimitersDep = Annotated[dict[str, SlidingWindowLimiter], Depends(get_limiters)]
+SessionDep = Annotated[CurrentAuth, Depends(require_session)]
+ActiveSessionDep = Annotated[CurrentAuth, Depends(require_active_session)]
+
+
+async def resolve_stream_auth(request: Request) -> CurrentAuth:
+    """Validate the session cookie for a long-lived stream (SSE/WebSocket).
+
+    Streaming endpoints must NOT depend on ``get_db``/``require_active_session``:
+    those hold a DB session open for the whole response, which for an
+    indefinitely long stream leaks a connection. This opens its own short-lived
+    session, validates, closes it, and returns the (detached but usable, since
+    ``expire_on_commit=False``) ``CurrentAuth``. Requires an ``active`` session.
+
+    Raises:
+        AuthRequiredError: Missing/unknown/revoked/expired cookie.
+        SessionStateError: Session exists but is not ``active``.
+    """
+    raw_token = request.cookies.get(COOKIE_NAME)
+    if raw_token is None:
+        raise AuthRequiredError()
+    sessionmaker: async_sessionmaker[AsyncSession] = request.app.state.sessionmaker
+    settings: Settings = request.app.state.settings
+    async with sessionmaker() as db:
+        found = await AuthService(db, settings).get_valid_session(raw_token)
+    if found is None:
+        raise AuthRequiredError()
+    session, user = found
+    if session.state != SessionState.ACTIVE:
+        raise SessionStateError("This endpoint requires a fully authenticated session.")
+    return CurrentAuth(session=session, user=user, raw_token=raw_token)

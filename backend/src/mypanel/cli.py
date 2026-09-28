@@ -106,9 +106,7 @@ def _add_config_argument(parser: argparse.ArgumentParser) -> None:
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog="mypanel", description="mypanel server management panel"
-    )
+    parser = argparse.ArgumentParser(prog="mypanel", description="mypanel server management panel")
     sub = parser.add_subparsers(dest="command", required=True)
 
     serve = sub.add_parser("serve", help="run the panel API server")

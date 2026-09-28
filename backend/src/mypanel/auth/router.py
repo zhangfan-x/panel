@@ -27,7 +27,6 @@ from mypanel.auth.deps import (
     require_csrf,
     require_recent_reauth,
     require_session,
-    require_state,
 )
 from mypanel.auth.service import AuthService
 from mypanel.config import Settings
@@ -44,7 +43,6 @@ LimitersDep = Annotated[dict[str, SlidingWindowLimiter], Depends(get_limiters)]
 ServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 SessionDep = Annotated[CurrentAuth, Depends(require_session)]
 ActiveSessionDep = Annotated[CurrentAuth, Depends(require_active_session)]
-MfaPendingDep = Annotated[CurrentAuth, Depends(require_state(SessionState.MFA_PENDING))]
 
 # Length caps are defensive only (Argon2 cost, absurd payloads); real validation
 # lives in the service layer. Passwords can only ever be set through these
@@ -63,13 +61,8 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=_PASSWORD_MAX)
 
 
-class TotpCodeRequest(BaseModel):
-    code: str = Field(min_length=1, max_length=16)
-
-
 class ReauthRequest(BaseModel):
     password: str = Field(min_length=1, max_length=_PASSWORD_MAX)
-    code: str = Field(min_length=1, max_length=16)
 
 
 class ChangePasswordRequest(BaseModel):
@@ -137,7 +130,7 @@ async def bootstrap_owner(
         request=request,
         commit=True,
     )
-    return {"session_state": SessionState.TOTP_ENROLL.value}
+    return {"session_state": SessionState.ACTIVE.value}
 
 
 @auth_router.post("/login")
@@ -150,7 +143,7 @@ async def login(
     service: ServiceDep,
     limiters: LimitersDep,
 ) -> dict[str, Any]:
-    """Password step of the login; sets the session cookie on success."""
+    """Password login; sets the session cookie on success."""
     ip, user_agent = _client_meta(request)
     try:
         limiters["login_ip"].acquire(("login_ip", ip))
@@ -183,85 +176,6 @@ async def login(
         commit=True,
     )
     return {"session_state": session.state}
-
-
-@auth_router.post("/totp/verify")
-async def totp_verify(
-    body: TotpCodeRequest,
-    request: Request,
-    auth: MfaPendingDep,
-    db: DbDep,
-    service: ServiceDep,
-    limiters: LimitersDep,
-) -> dict[str, Any]:
-    """TOTP step of the login: upgrade an mfa_pending session to active."""
-    key = ("totp", str(auth.user.id))
-    try:
-        limiters["totp"].acquire(key)
-        await service.verify_totp_login(auth.session, body.code)
-    except AppError as exc:
-        await record_audit(
-            db,
-            resource="auth",
-            action="auth.totp_verify",
-            result="denied",
-            actor_user_id=auth.user.id,
-            request=request,
-            error_code=exc.code,
-            commit=True,
-        )
-        raise
-    limiters["totp"].reset(key)
-    await record_audit(
-        db,
-        resource="auth",
-        action="auth.totp_verify",
-        actor_user_id=auth.user.id,
-        request=request,
-        commit=True,
-    )
-    return {"session_state": SessionState.ACTIVE.value}
-
-
-@auth_router.post("/totp/setup")
-async def totp_setup(
-    request: Request,
-    auth: SessionDep,
-    db: DbDep,
-    service: ServiceDep,
-) -> dict[str, Any]:
-    """Generate a TOTP secret (enrolment or rebind; state checked in the service)."""
-    secret, uri = await service.totp_setup(auth.session, auth.user)
-    await record_audit(
-        db,
-        resource="auth",
-        action="auth.totp_setup",
-        actor_user_id=auth.user.id,
-        request=request,
-        commit=True,
-    )
-    return {"secret": secret, "otpauth_uri": uri}
-
-
-@auth_router.post("/totp/confirm")
-async def totp_confirm(
-    body: TotpCodeRequest,
-    request: Request,
-    auth: SessionDep,
-    db: DbDep,
-    service: ServiceDep,
-) -> dict[str, Any]:
-    """Confirm the pending TOTP device; totp_enroll sessions become active."""
-    await service.totp_confirm(auth.session, auth.user, body.code)
-    await record_audit(
-        db,
-        resource="auth",
-        action="auth.totp_confirm",
-        actor_user_id=auth.user.id,
-        request=request,
-        commit=True,
-    )
-    return {"session_state": auth.session.state}
 
 
 @auth_router.get("/session")
@@ -312,11 +226,11 @@ async def reauth(
     service: ServiceDep,
     limiters: LimitersDep,
 ) -> dict[str, Any]:
-    """Re-verify password + TOTP to open the re-authentication window."""
+    """Re-verify the password to open the re-authentication window."""
     key = ("reauth", str(auth.user.id))
     try:
         limiters["reauth"].acquire(key)
-        await service.reauth(auth.session, auth.user, body.password, body.code)
+        await service.reauth(auth.session, auth.user, body.password)
     except AppError as exc:
         await record_audit(
             db,
@@ -348,9 +262,7 @@ async def list_sessions(auth: ActiveSessionDep, service: ServiceDep) -> dict[str
     return {"sessions": sessions}
 
 
-@auth_router.delete(
-    "/sessions/{session_id}", status_code=204, dependencies=[Depends(require_csrf)]
-)
+@auth_router.delete("/sessions/{session_id}", status_code=204, dependencies=[Depends(require_csrf)])
 async def revoke_session(
     session_id: int,
     request: Request,
@@ -384,9 +296,7 @@ async def change_password(
     service: ServiceDep,
 ) -> None:
     """Change the password; all other sessions of the user are revoked."""
-    await service.change_password(
-        auth.user, auth.session, body.current_password, body.new_password
-    )
+    await service.change_password(auth.user, auth.session, body.current_password, body.new_password)
     await record_audit(
         db,
         resource="auth",

@@ -20,10 +20,13 @@ from mypanel.db.base import Base
 
 
 class SessionState(enum.StrEnum):
-    """Values of ``Session.state`` (login state machine)."""
+    """Values of ``Session.state``.
 
-    MFA_PENDING = "mfa_pending"
-    TOTP_ENROLL = "totp_enroll"
+    Only ``active`` exists today; the column stays an open string so the planned
+    TOTP two-step login (``mfa_pending``/``totp_enroll``) can be added without a
+    schema change.
+    """
+
     ACTIVE = "active"
 
 
@@ -62,20 +65,6 @@ class Session(Base):
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ip: Mapped[str] = mapped_column(String(64))
     user_agent: Mapped[str] = mapped_column(Text)
-
-
-class MfaDevice(Base):
-    __tablename__ = "mfa_devices"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    kind: Mapped[str] = mapped_column(String(16))
-    secret: Mapped[str] = mapped_column(String(64))
-    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    # Highest TOTP counter accepted for this device; a code is one-time use and is
-    # rejected unless its counter is strictly greater (RFC 6238 section 5.2).
-    last_timecode: Mapped[int | None] = mapped_column(default=None)
 
 
 class Setting(Base):
@@ -122,6 +111,10 @@ class Job(Base):
     error_message: Mapped[str | None] = mapped_column(Text)
     request_id: Mapped[str] = mapped_column(String(32))
     log_path: Mapped[str | None] = mapped_column(Text)
+    # JSON-encoded original submission arguments (used by manual retry).
+    params: Mapped[str | None] = mapped_column(Text)
+    # Mutual-exclusion resource key (e.g. "compose:<path>", "container:<id>").
+    resource_key: Mapped[str | None] = mapped_column(String(128))
 
 
 class JobEvent(Base):

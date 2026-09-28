@@ -158,7 +158,6 @@ def _cmd_reset_owner(args: argparse.Namespace) -> int:
                 "UPDATE users SET password_hash = ?, password_changed_at = ? WHERE id = ?",
                 (password_hash, now, owner_id),
             )
-            conn.execute("DELETE FROM mfa_devices WHERE user_id = ?", (owner_id,))
             conn.execute(
                 "UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL",
                 (now, owner_id),
@@ -174,7 +173,7 @@ def _cmd_reset_owner(args: argparse.Namespace) -> int:
 
     print(f"Owner password for {username!r} has been reset.")
     print(f"New password: {new_password}")
-    print("All sessions were revoked and TOTP devices removed; next login re-enrolls TOTP.")
+    print("All sessions were revoked; log in again with the new password.")
     return 0
 
 

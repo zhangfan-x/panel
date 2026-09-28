@@ -32,10 +32,16 @@ export default defineConfig({
           if (id.includes('element-plus') || id.includes('@element-plus')) {
             return 'element-plus'
           }
-          // 后续里程碑拆包预留（M1 未在页面引入这些依赖，暂不会进入产物）：
-          //   echarts / vue-echarts → 'echarts'（M2 监控图表，按路由懒加载）
-          //   monaco-editor         → 'monaco'（M3 文件在线编辑，按路由懒加载）
-          //   @xterm/xterm          → 'xterm'（M5 root 终端，按路由懒加载）
+          // 重型依赖按路由懒加载 + 单独分包（页面里 import 时才进入产物）：
+          if (id.includes('echarts') || id.includes('vue-echarts')) {
+            return 'echarts'
+          }
+          if (id.includes('monaco-editor')) {
+            return 'monaco'
+          }
+          if (id.includes('@xterm')) {
+            return 'xterm'
+          }
           return undefined
         },
       },

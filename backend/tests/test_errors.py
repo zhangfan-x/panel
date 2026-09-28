@@ -24,8 +24,6 @@ ERROR_CONTRACT: dict[type[AppError], tuple[int, str, str]] = {
     errors.InvalidCredentialsError: (401, "auth.invalid_credentials", "Invalid Credentials"),
     errors.SessionStateError: (403, "auth.session_state", "Session State Not Permitted"),
     errors.ReauthRequiredError: (403, "auth.reauth_required", "Recent Re-Authentication Required"),
-    errors.TotpRequiredError: (403, "auth.totp_required", "TOTP Enrollment Required"),
-    errors.InvalidTotpError: (401, "auth.invalid_totp", "Invalid TOTP Code"),
     errors.RateLimitedError: (429, "auth.rate_limited", "Too Many Attempts"),
     errors.CsrfError: (403, "csrf.invalid", "CSRF Validation Failed"),
     errors.BadOriginError: (403, "request.bad_origin", "Origin Not Allowed"),
@@ -37,6 +35,9 @@ ERROR_CONTRACT: dict[type[AppError], tuple[int, str, str]] = {
     errors.WeakPasswordError: (422, "auth.weak_password", "Password Too Weak"),
     errors.HelperUnavailableError: (502, "helper.unavailable", "Helper Service Unavailable"),
     errors.HelperActionError: (400, "helper.action_failed", "Helper Action Failed"),
+    errors.PayloadTooLargeError: (413, "request.too_large", "Payload Too Large"),
+    errors.TerminalUnavailableError: (503, "terminal.unavailable", "Terminal Service Unavailable"),
+    errors.DockerUnavailableError: (503, "docker.unavailable", "Docker Daemon Unavailable"),
 }
 
 

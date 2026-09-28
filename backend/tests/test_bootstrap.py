@@ -2,7 +2,7 @@
 
 Covers GET /bootstrap/state, service-level ``issue_bootstrap_token`` (the CLI is a
 thin wrapper around it) and every POST /bootstrap/owner outcome: wrong/expired/
-replayed token, weak password, invalid username, success (cookie + totp_enroll
+replayed token, weak password, invalid username, success (cookie + active
 session, token destroyed) and the defensive 409 when an owner already exists.
 """
 
@@ -172,11 +172,11 @@ async def test_owner_rejects_invalid_username(app, client, username):
 # --- POST /bootstrap/owner: success and one-time semantics --------------------------
 
 
-async def test_owner_success_sets_enroll_session_and_consumes_token(app, client, settings):
+async def test_owner_success_sets_active_session_and_consumes_token(app, client, settings):
     token = await issue_token(app)
     resp = await client.post(OWNER, json={"token": token, **GOOD_BODY})
     assert resp.status_code == 200
-    assert resp.json() == {"session_state": "totp_enroll"}
+    assert resp.json() == {"session_state": "active"}
 
     set_cookie = resp.headers["set-cookie"].lower()
     assert "mypanel_session=" in set_cookie
@@ -186,11 +186,11 @@ async def test_owner_success_sets_enroll_session_and_consumes_token(app, client,
     assert f"max-age={settings.limits.session_max_hours * 3600}" in set_cookie
     assert "secure" not in set_cookie  # dev_http test settings
 
-    # The cookie is a live totp_enroll session with a CSRF token.
+    # The cookie is a live active session with a CSRF token.
     resp = await client.get(SESSION_INFO)
     assert resp.status_code == 200
     body = resp.json()
-    assert body["session_state"] == "totp_enroll"
+    assert body["session_state"] == "active"
     assert body["user"]["username"] == OWNER_USERNAME
     assert body["csrf_token"]
 

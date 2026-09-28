@@ -1,18 +1,14 @@
 """Unit tests for the security primitives (docs/code-plan.md sections 5 and 9).
 
-Pure unit level: passwords, opaque tokens, TOTP and CSRF derivation are exercised
-directly -- no HTTP, no app, no database. TOTP codes are computed with pyotp against
-the real clock; ``verify_totp`` accepts one 30-second step of drift (valid_window=1),
-which also keeps step-boundary races out of these tests.
+Pure unit level: passwords, opaque tokens and CSRF derivation are exercised
+directly -- no HTTP, no app, no database.
 """
 
 from __future__ import annotations
 
 import hashlib
 import re
-from datetime import UTC, datetime, timedelta
 
-import pyotp
 import pytest
 
 from mypanel.errors import WeakPasswordError
@@ -20,14 +16,12 @@ from mypanel.security import (
     DUMMY_HASH,
     derive_csrf_token,
     generate_token,
-    generate_totp_secret,
     hash_password,
     hash_token,
     tokens_match,
     validate_password_strength,
     verify_csrf_token,
     verify_password,
-    verify_totp,
 )
 
 SAMPLE_PASSWORD = "correct-horse-battery-9!"
@@ -143,48 +137,6 @@ class TestTokens:
         # Non-ASCII input must not raise (bytes are compared, not str).
         assert tokens_match("令牌-alpha", "令牌-alpha") is True
         assert tokens_match("令牌-alpha", "令牌-bravo") is False
-
-
-class TestTotp:
-    def test_current_code_accepted(self) -> None:
-        secret = generate_totp_secret()
-        code = pyotp.TOTP(secret).now()
-        assert verify_totp(secret, code) is True
-
-    def test_wrong_code_rejected(self) -> None:
-        secret = generate_totp_secret()
-        totp = pyotp.TOTP(secret)
-        now = datetime.now(tz=UTC)
-        # Exclude every code that could be valid during this test (steps -1..+2).
-        currently_valid = {totp.at(now + timedelta(seconds=30 * step)) for step in range(-1, 3)}
-        wrong = next(f"{i:06d}" for i in range(1_000_000) if f"{i:06d}" not in currently_valid)
-        assert verify_totp(secret, wrong) is False
-
-    def test_surrounding_whitespace_is_stripped(self) -> None:
-        secret = generate_totp_secret()
-        code = pyotp.TOTP(secret).now()
-        assert verify_totp(secret, f"  {code}\t") is True
-
-    @pytest.mark.parametrize(
-        "code",
-        [
-            pytest.param("12345", id="5-digits"),
-            pytest.param("1234567", id="7-digits"),
-            pytest.param("12a456", id="contains-letter"),
-            pytest.param("12 456", id="inner-whitespace"),
-            pytest.param("", id="empty"),
-            pytest.param("      ", id="whitespace-only"),
-            pytest.param(FULLWIDTH_123456, id="fullwidth-digits-non-ascii"),
-        ],
-    )
-    def test_malformed_codes_rejected(self, code: str) -> None:
-        assert verify_totp(generate_totp_secret(), code) is False
-
-    def test_previous_time_step_code_accepted(self) -> None:
-        # valid_window=1: the code of the previous 30-second step still verifies.
-        secret = generate_totp_secret()
-        previous = pyotp.TOTP(secret).at(datetime.now(tz=UTC) - timedelta(seconds=30))
-        assert verify_totp(secret, previous) is True
 
 
 class TestCsrf:

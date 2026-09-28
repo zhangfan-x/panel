@@ -7,7 +7,7 @@ export async function getBootstrapState(): Promise<BootstrapStateResponse> {
   return data
 }
 
-/** POST /bootstrap/owner：用一次性 token 创建 Owner，成功后进入 totp_enroll。公开端点（无 CSRF）。 */
+/** POST /bootstrap/owner：用一次性 token 创建 Owner，成功后会话即为 active。公开端点（无 CSRF）。 */
 export async function createOwner(body: BootstrapOwnerRequest): Promise<SessionStateResponse> {
   const { data } = await client.post<SessionStateResponse>('/bootstrap/owner', body)
   return data

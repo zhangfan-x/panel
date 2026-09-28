@@ -44,9 +44,7 @@ def _build_parser() -> argparse.ArgumentParser:
         metavar="UID",
         help="peer UID allowed to connect (repeatable; default: current effective UID)",
     )
-    parser.add_argument(
-        "--dev", action="store_true", help="pretty console logs instead of JSON"
-    )
+    parser.add_argument("--dev", action="store_true", help="pretty console logs instead of JSON")
     return parser
 
 

@@ -67,7 +67,7 @@ class InvalidCredentialsError(AppError):
 
 
 class SessionStateError(AppError):
-    """Session exists but is in the wrong state for this endpoint (e.g. mfa_pending)."""
+    """Session exists but is in the wrong state for this endpoint."""
 
     status = 403
     code = "auth.session_state"
@@ -78,18 +78,6 @@ class ReauthRequiredError(AppError):
     status = 403
     code = "auth.reauth_required"
     title = "Recent Re-Authentication Required"
-
-
-class TotpRequiredError(AppError):
-    status = 403
-    code = "auth.totp_required"
-    title = "TOTP Enrollment Required"
-
-
-class InvalidTotpError(AppError):
-    status = 401
-    code = "auth.invalid_totp"
-    title = "Invalid TOTP Code"
 
 
 class RateLimitedError(AppError):
@@ -166,3 +154,21 @@ class HelperActionError(AppError):
     def __init__(self, helper_code: str, message: str) -> None:
         super().__init__(message, extra={"helper_code": helper_code})
         self.helper_code = helper_code
+
+
+class PayloadTooLargeError(AppError):
+    status = 413
+    code = "request.too_large"
+    title = "Payload Too Large"
+
+
+class TerminalUnavailableError(AppError):
+    status = 503
+    code = "terminal.unavailable"
+    title = "Terminal Service Unavailable"
+
+
+class DockerUnavailableError(AppError):
+    status = 503
+    code = "docker.unavailable"
+    title = "Docker Daemon Unavailable"

@@ -30,6 +30,8 @@ describe('SidebarMenu', () => {
       '服务',
       '文件',
       'Docker',
+      '网站',
+      '代理',
       '任务',
       '终端',
       '审计',
@@ -40,6 +42,9 @@ describe('SidebarMenu', () => {
     // Docker 子菜单项
     expect(text).toContain('容器')
     expect(text).toContain('Compose')
+    // 网站子菜单项
+    expect(text).toContain('站点')
+    expect(text).toContain('证书')
     // 品牌名
     expect(text).toContain('mypanel')
   })

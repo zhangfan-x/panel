@@ -26,15 +26,21 @@ from mypanel.api import api_router
 from mypanel.config import Settings, get_settings, set_settings
 from mypanel.db import make_engine, make_sessionmaker, run_migrations
 from mypanel.errors import AppError, RateLimitedError, ValidationFailedError
+from mypanel.events import EventBus
 from mypanel.ipc.client import HelperClient
+from mypanel.jobs.manager import JobManager
 from mypanel.logging import get_logger, setup_logging
+from mypanel.metrics.sampler import MetricsSampler
 from mypanel.middleware import (
     SECURITY_HEADERS,
     HostOriginMiddleware,
     RequestContextMiddleware,
     SecurityHeadersMiddleware,
 )
+from mypanel.proxy.scheduler import SubscriptionScheduler
+from mypanel.proxy.tracker import ProxyTracker
 from mypanel.security import SlidingWindowLimiter
+from mypanel.terminal.manager import TerminalManager
 
 _PROBLEM_MEDIA_TYPE = "application/problem+json"
 _MAX_VALIDATION_ITEMS = 5
@@ -50,10 +56,30 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     _ = settings.secret_key
     engine = make_engine(settings)
     app.state.engine = engine
-    app.state.sessionmaker = make_sessionmaker(engine)
+    sessionmaker = make_sessionmaker(engine)
+    app.state.sessionmaker = sessionmaker
+
+    events: EventBus = app.state.events
+    metrics = MetricsSampler(sessionmaker, settings, events)
+    jobs = JobManager(sessionmaker, settings, events)
+    proxy_tracker = ProxyTracker(settings)
+    proxy_scheduler = SubscriptionScheduler(settings)
+    app.state.metrics = metrics
+    app.state.jobs = jobs
+    app.state.proxy_tracker = proxy_tracker
+    app.state.proxy_scheduler = proxy_scheduler
+    await metrics.start()
+    await jobs.start()
+    await proxy_tracker.start()
+    await proxy_scheduler.start()
     try:
         yield
     finally:
+        await proxy_scheduler.stop()
+        await proxy_tracker.stop()
+        await jobs.stop()
+        await metrics.stop()
+        await app.state.terminal.aclose()
         await engine.dispose()
 
 
@@ -133,10 +159,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.limiters = {
         "login_ip": SlidingWindowLimiter(login_attempts, 60),
         "login_user": SlidingWindowLimiter(login_attempts, 60),
-        "totp": SlidingWindowLimiter(10, 60),
         "reauth": SlidingWindowLimiter(5, 60),
     }
     app.state.helper = HelperClient(settings.paths.helper_socket)
+    app.state.events = EventBus()
+    app.state.terminal = TerminalManager(settings)
 
     # add_middleware wraps outside the previous one: register innermost first.
     app.add_middleware(HostOriginMiddleware, settings=settings)
