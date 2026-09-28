@@ -5,6 +5,7 @@ reference/
 .agents/
 .codex/
 .claude/
+CLAUDE.md
 
 # python
 __pycache__/
