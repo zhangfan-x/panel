@@ -26,3 +26,7 @@ data/
 *.db
 *.db-wal
 *.db-shm
+
+# design docs (local only, never published)
+docs/
+implementation-plan.md
