@@ -1,8 +1,8 @@
 """Subscription profiles, the extend config/script and the synthesis pipeline.
 
 Covers the proxy feature added on top of docs/code-plan-m2-m5.md: the pure merge
-semantics and the QuickJS sandbox in :mod:`mypanel.proxy.compose`, the on-disk
-profile store and download logic in :mod:`mypanel.proxy.profiles`, the background
+semantics and the QuickJS sandbox in :mod:`ownpanel.proxy.compose`, the on-disk
+profile store and download logic in :mod:`ownpanel.proxy.profiles`, the background
 refresh loop, and the ``/proxy/profiles`` + ``/proxy/extend`` routes (CSRF and
 reauth gates included). No network and no live Clash controller: downloads go
 through ``httpx.MockTransport`` and the controller through ``FakeClash``.
@@ -21,13 +21,13 @@ from conftest import API, OwnerContext, csrf_headers, db_execute, naive_utcnow
 from sqlalchemy import update
 from test_proxy import FakeClash, assert_problem
 
-from mypanel.config import Settings
-from mypanel.db.models import Session
-from mypanel.errors import BadRequestError
-from mypanel.proxy import profiles as profile_store
-from mypanel.proxy import router as proxy_router
-from mypanel.proxy.compose import apply_merge, compose_sync, parse_yaml_mapping, run_script
-from mypanel.proxy.scheduler import SubscriptionScheduler
+from ownpanel.config import Settings
+from ownpanel.db.models import Session
+from ownpanel.errors import BadRequestError
+from ownpanel.proxy import profiles as profile_store
+from ownpanel.proxy import router as proxy_router
+from ownpanel.proxy.compose import apply_merge, compose_sync, parse_yaml_mapping, run_script
+from ownpanel.proxy.scheduler import SubscriptionScheduler
 
 PROXY = f"{API}/proxy"
 
@@ -160,7 +160,7 @@ def test_run_script_reports_user_line_numbers() -> None:
     # The prelude the panel wraps around the script must not shift the numbers,
     # and its own frames must not appear at all.
     assert "第 3 行" in message
-    assert "__mypanel" not in message
+    assert "__ownpanel" not in message
 
 
 def test_compose_sync_runs_the_whole_pipeline() -> None:
@@ -525,7 +525,7 @@ def _configured(settings: Settings, tmp_path: Path) -> Path:
 async def test_apply_profile_writes_and_keeps_custom_rules(
     settings: Settings, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from mypanel.proxy.custom_rules import new_rule_entry, save_rules
+    from ownpanel.proxy.custom_rules import new_rule_entry, save_rules
 
     monkeypatch.setattr(profile_store, "ClashClient", FakeClash)
     cfg = _configured(settings, tmp_path)

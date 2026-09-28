@@ -17,9 +17,9 @@ import httpx
 import pytest
 from conftest import API, SettingsFactory
 
-from mypanel.config import Settings
-from mypanel.errors import RateLimitedError
-from mypanel.security.ratelimit import SlidingWindowLimiter
+from ownpanel.config import Settings
+from ownpanel.errors import RateLimitedError
+from ownpanel.security.ratelimit import SlidingWindowLimiter
 
 LOGIN_MAX_ATTEMPTS = 3  # small budget keeps the HTTP burst tests fast
 WRONG_PASSWORD = "definitely-wrong-pw-1!"
@@ -45,7 +45,7 @@ class Clock:
 def clock(monkeypatch: pytest.MonkeyPatch) -> Clock:
     """Replace ``monotonic`` as seen by the ratelimit module with a frozen clock."""
     frozen = Clock()
-    monkeypatch.setattr("mypanel.security.ratelimit.monotonic", lambda: frozen.now)
+    monkeypatch.setattr("ownpanel.security.ratelimit.monotonic", lambda: frozen.now)
     return frozen
 
 

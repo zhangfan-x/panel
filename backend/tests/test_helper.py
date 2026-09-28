@@ -19,13 +19,13 @@ from pathlib import Path
 
 import pytest
 
-import mypanel
-from mypanel.errors import HelperActionError, HelperUnavailableError
-from mypanel.helper.server import HelperServer
-from mypanel.ipc.client import HelperClient
+import ownpanel
+from ownpanel.errors import HelperActionError, HelperUnavailableError
+from ownpanel.helper.server import HelperServer
+from ownpanel.ipc.client import HelperClient
 
 # Importing the actions package registers ping/files.stat/files.list handlers.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 
 @contextlib.contextmanager
@@ -60,7 +60,7 @@ def helper(tmp_path_factory: pytest.TempPathFactory) -> Iterator[HelperClient]:
 
 def test_ping_reports_version(helper: HelperClient) -> None:
     result = helper.call("ping")
-    assert result == {"pong": True, "helper_version": mypanel.__version__}
+    assert result == {"pong": True, "helper_version": ownpanel.__version__}
     assert result["pong"] is True
 
 

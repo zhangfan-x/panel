@@ -28,7 +28,7 @@ const route = useRoute()
   <div class="sidebar">
     <div class="sidebar__brand">
       <el-icon :size="22"><Odometer /></el-icon>
-      <span class="sidebar__brand-text">mypanel</span>
+      <span class="sidebar__brand-text">ownpanel</span>
     </div>
     <el-menu router :default-active="route.path" class="sidebar__menu">
       <el-menu-item index="/dashboard">

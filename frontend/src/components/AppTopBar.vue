@@ -11,7 +11,7 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
-const pageTitle = computed(() => (route.meta.title as string | undefined) ?? 'mypanel')
+const pageTitle = computed(() => (route.meta.title as string | undefined) ?? 'ownpanel')
 const username = computed(() => auth.user?.username ?? '未登录')
 
 async function handleLogout(): Promise<void> {

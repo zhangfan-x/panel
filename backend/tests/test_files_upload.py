@@ -14,7 +14,7 @@ import httpx
 import pytest
 from conftest import API, OwnerContext, SettingsFactory, csrf_headers
 
-from mypanel.config import Settings
+from ownpanel.config import Settings
 
 _UPLOAD_LIMIT = 2048
 
@@ -40,12 +40,12 @@ def _multipart_body(boundary: str, path: str, payload: bytes) -> bytes:
 async def test_chunked_upload_over_limit_is_rejected(
     client: httpx.AsyncClient, owner: OwnerContext
 ) -> None:
-    boundary = "----mypaneltest"
+    boundary = "----ownpaneltest"
     # Body far larger than the limit + multipart slack, sent chunked (no
     # Content-Length): the wrapped receive must abort it before request.form()
     # can spool it to disk — no helper is contacted.
     payload = b"x" * (256 * 1024)
-    body = _multipart_body(boundary, "/tmp/mypanel-upload-probe.bin", payload)
+    body = _multipart_body(boundary, "/tmp/ownpanel-upload-probe.bin", payload)
 
     async def stream() -> AsyncIterator[bytes]:
         for i in range(0, len(body), 512):

@@ -18,8 +18,8 @@ from conftest import API, OwnerContext, db_execute, naive_utcnow
 from fastapi import FastAPI
 from sqlalchemy import insert
 
-from mypanel.db.models import MetricSample
-from mypanel.system.router import _downsample
+from ownpanel.db.models import MetricSample
+from ownpanel.system.router import _downsample
 
 METRICS = f"{API}/system/metrics"
 
@@ -154,7 +154,7 @@ async def test_metrics_requires_active_session(client: httpx.AsyncClient) -> Non
 
 
 def test_parse_gpu_csv_parses_and_skips_bad_lines() -> None:
-    from mypanel.metrics.sampler import _parse_gpu_csv
+    from ownpanel.metrics.sampler import _parse_gpu_csv
 
     text = (
         "0, NVIDIA GeForce RTX 2080 Ti, 4, 807, 11264, 46\n"
@@ -171,6 +171,6 @@ def test_parse_gpu_csv_parses_and_skips_bad_lines() -> None:
 
 
 def test_parse_gpu_csv_empty() -> None:
-    from mypanel.metrics.sampler import _parse_gpu_csv
+    from ownpanel.metrics.sampler import _parse_gpu_csv
 
     assert _parse_gpu_csv("") == []

@@ -83,7 +83,7 @@ async function handleSubmit(): Promise<void> {
     <el-card class="auth-card" shadow="never">
       <template #header>
         <div class="auth-card__header">
-          <h2 class="auth-card__title">初始化 mypanel</h2>
+          <h2 class="auth-card__title">初始化 ownpanel</h2>
           <p class="auth-card__subtitle">使用安装时生成的一次性令牌创建管理员账户</p>
         </div>
       </template>

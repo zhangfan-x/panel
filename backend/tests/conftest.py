@@ -1,4 +1,4 @@
-"""Shared pytest infrastructure for the mypanel backend test suite (team-frozen).
+"""Shared pytest infrastructure for the ownpanel backend test suite (team-frozen).
 
 pytest inserts ``tests/`` into ``sys.path`` (there is no ``__init__.py``), so besides
 the fixtures below, the plain helpers are importable from any test module:
@@ -11,7 +11,7 @@ Ground rules baked into these fixtures (docs/code-plan.md sections 5, 6 and 9):
 * Every test gets isolated ``Settings`` rooted under ``tmp_path``: its own SQLite
   database, secret key and helper/terminal socket paths. ``create_app()`` overwrites
   the process-wide settings singleton, so never rely on
-  ``mypanel.config.get_settings()`` when more than one app exists in a test.
+  ``ownpanel.config.get_settings()`` when more than one app exists in a test.
 * ``httpx.ASGITransport`` does not run the lifespan. The ``client`` fixture wraps
   ``app.router.lifespan_context(app)``, which runs the migrations and creates
   ``app.state.engine`` / ``app.state.sessionmaker``. Anything that touches
@@ -43,9 +43,9 @@ import httpx
 import pytest
 from fastapi import FastAPI
 
-from mypanel.app import create_app
-from mypanel.auth.service import AuthService
-from mypanel.config import Settings
+from ownpanel.app import create_app
+from ownpanel.auth.service import AuthService
+from ownpanel.config import Settings
 
 API = "/api/v1"
 BASE_URL = "http://127.0.0.1:25443"

@@ -1,7 +1,7 @@
 """Docker daemon configuration tests (``/etc/docker/daemon.json``).
 
 Helper level: the ``dockercfg.*`` actions are exercised against a temporary
-directory — :data:`mypanel.helper.actions.dockercfg.DAEMON_JSON` is
+directory — :data:`ownpanel.helper.actions.dockercfg.DAEMON_JSON` is
 monkeypatched, and because the helper server runs in-process (a thread, see
 ``test_helper.running_helper``) that patch is visible to its handlers too, so
 nothing here can touch the real system config.
@@ -35,13 +35,13 @@ from fastapi import FastAPI
 from sqlalchemy import select, update
 from test_helper import running_helper
 
-from mypanel.config import Settings
-from mypanel.db.models import AuditLog, Session
-from mypanel.helper.actions import dockercfg
-from mypanel.helper.registry import ActionError
-from mypanel.ipc.client import HelperClient
+from ownpanel.config import Settings
+from ownpanel.db.models import AuditLog, Session
+from ownpanel.helper.actions import dockercfg
+from ownpanel.helper.registry import ActionError
+from ownpanel.ipc.client import HelperClient
 
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 DOCKER = f"{API}/docker"
 CONFIG = f"{DOCKER}/daemon-config"

@@ -1,4 +1,4 @@
-"""Wire-protocol tests for mypanel.ipc: framing, fd passing, message models.
+"""Wire-protocol tests for ownpanel.ipc: framing, fd passing, message models.
 
 docs/code-plan.md section 4: a frame is a 4-byte big-endian unsigned length
 followed by a UTF-8 JSON object of at most 256 KiB. Descriptors travel as one
@@ -16,14 +16,14 @@ from collections.abc import Iterator
 
 import pytest
 
-from mypanel.ipc.framing import (
+from ownpanel.ipc.framing import (
     MAX_FRAME_BYTES,
     FrameEOFError,
     FramingError,
     recv_frame,
     send_frame,
 )
-from mypanel.ipc.messages import (
+from ownpanel.ipc.messages import (
     HELPER_DENIED,
     HELPER_INTERNAL,
     HELPER_INVALID_ARGS,

@@ -23,9 +23,9 @@ from conftest import (
 )
 from sqlalchemy import select, update
 
-from mypanel.db.models import Session
-from mypanel.proxy import router as proxy_router
-from mypanel.proxy.clash import DELAY_TEST_URL, ClashClient, parse_groups, parse_status
+from ownpanel.db.models import Session
+from ownpanel.proxy import router as proxy_router
+from ownpanel.proxy.clash import DELAY_TEST_URL, ClashClient, parse_groups, parse_status
 
 PROXY = f"{API}/proxy"
 
@@ -459,7 +459,7 @@ async def test_config_file_put_rejects_invalid_yaml(
 
 
 def test_validate_rule_normalises_and_accepts() -> None:
-    from mypanel.proxy.custom_rules import validate_rule
+    from ownpanel.proxy.custom_rules import validate_rule
 
     assert validate_rule(" domain-suffix , example.com , PROXY ") == (
         "DOMAIN-SUFFIX,example.com,PROXY"
@@ -484,8 +484,8 @@ def test_validate_rule_normalises_and_accepts() -> None:
     ],
 )
 def test_validate_rule_rejects_malformed(bad: str) -> None:
-    from mypanel.errors import BadRequestError
-    from mypanel.proxy.custom_rules import validate_rule
+    from ownpanel.errors import BadRequestError
+    from ownpanel.proxy.custom_rules import validate_rule
 
     with pytest.raises(BadRequestError):
         validate_rule(bad)
@@ -494,7 +494,7 @@ def test_validate_rule_rejects_malformed(bad: str) -> None:
 def test_inject_rules_prepends_block_and_is_idempotent() -> None:
     import yaml
 
-    from mypanel.proxy.custom_rules import inject_rules, strip_injected
+    from ownpanel.proxy.custom_rules import inject_rules, strip_injected
 
     base = "mode: rule\nrules:\n  - DOMAIN,old.com,DIRECT\n  - MATCH,PROXY\n"
     once = inject_rules(base, ["DOMAIN-SUFFIX,a.com,PROXY"])
@@ -514,15 +514,15 @@ def test_inject_rules_prepends_block_and_is_idempotent() -> None:
 def test_inject_rules_without_rules_key_appends_section() -> None:
     import yaml
 
-    from mypanel.proxy.custom_rules import inject_rules
+    from ownpanel.proxy.custom_rules import inject_rules
 
     out = inject_rules("mode: rule", ["MATCH,DIRECT"])
     assert yaml.safe_load(out)["rules"] == ["MATCH,DIRECT"]
 
 
 def test_inject_rules_rejects_flow_style() -> None:
-    from mypanel.errors import BadRequestError
-    from mypanel.proxy.custom_rules import inject_rules
+    from ownpanel.errors import BadRequestError
+    from ownpanel.proxy.custom_rules import inject_rules
 
     with pytest.raises(BadRequestError):
         inject_rules("rules: [MATCH,DIRECT]\n", ["DOMAIN,a.com,PROXY"])
@@ -576,7 +576,7 @@ async def test_service_action_start_ok_and_audited(
     assert body["running"] is True
     assert ("start",) in calls
 
-    from mypanel.db.models import AuditLog
+    from ownpanel.db.models import AuditLog
 
     row = await db_scalar(
         app,
@@ -644,7 +644,7 @@ async def test_custom_rule_add_injects_into_config(
     assert entry["rule"] == "DOMAIN-SUFFIX,example.com,DIRECT"
 
     text = cfg.read_text(encoding="utf-8")
-    assert "BEGIN mypanel custom rules" in text
+    assert "BEGIN ownpanel custom rules" in text
     parsed = yaml.safe_load(text)
     assert parsed["rules"][0] == "DOMAIN-SUFFIX,example.com,DIRECT"
     assert parsed["rules"][-1] == "MATCH,DIRECT"
@@ -747,7 +747,7 @@ async def test_connections_serves_tracker_snapshot(
 ) -> None:
     from datetime import UTC, datetime, timedelta
 
-    from mypanel.proxy.tracker import ProxyTracker
+    from ownpanel.proxy.tracker import ProxyTracker
 
     # A dev machine may run a real controller on the default port and the app's
     # own tracker polls it in the background; swap in a fresh, never-started
@@ -827,7 +827,7 @@ async def test_traffic_history_endpoint(
 ) -> None:
     from datetime import UTC, datetime, timedelta
 
-    from mypanel.proxy.tracker import ProxyTracker
+    from ownpanel.proxy.tracker import ProxyTracker
 
     # Fresh, never-started tracker: isolate from any real controller (see above).
     tracker = ProxyTracker(app.state.settings)

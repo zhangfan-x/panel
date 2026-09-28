@@ -24,17 +24,17 @@ from fastapi import FastAPI
 from sqlalchemy import select
 from test_helper import running_helper
 
-from mypanel.config import Settings
-from mypanel.db.models import AuditLog
-from mypanel.errors import HelperActionError
-from mypanel.helper.actions import dockersvc
-from mypanel.ipc.client import HelperClient
+from ownpanel.config import Settings
+from ownpanel.db.models import AuditLog
+from ownpanel.errors import HelperActionError
+from ownpanel.helper.actions import dockersvc
+from ownpanel.ipc.client import HelperClient
 
 # Importing the actions package registers every docker.* action.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 DOCKER = f"{API}/docker"
-UNKNOWN = "mypanel-test-no-such-object"
+UNKNOWN = "ownpanel-test-no-such-object"
 
 CONTAINER_ROW_FIELDS = {"id", "name", "image", "state", "status", "ports", "created", "labels"}
 IMAGE_ROW_FIELDS = {"id", "tags", "size", "created"}
@@ -99,7 +99,7 @@ def broken_docker(monkeypatch: pytest.MonkeyPatch) -> None:
     pointing ``DOCKER_HOST`` at a dead socket affects its handler threads too.
     """
     monkeypatch.setattr(dockersvc, "_docker_client", None)
-    monkeypatch.setenv("DOCKER_HOST", "unix:///nonexistent/mypanel-docker.sock")
+    monkeypatch.setenv("DOCKER_HOST", "unix:///nonexistent/ownpanel-docker.sock")
 
 
 # ---------------------------------------------------------------------------
@@ -342,7 +342,7 @@ async def test_pull_request_body_is_validated(
 async def test_helper_down_is_502(
     app: FastAPI, client: httpx.AsyncClient, owner: OwnerContext
 ) -> None:
-    app.state.helper = HelperClient(Path("/nonexistent/mypanel-helper.sock"))
+    app.state.helper = HelperClient(Path("/nonexistent/ownpanel-helper.sock"))
     resp = await client.get(f"{DOCKER}/containers")
     assert_problem(resp, 502, "helper.unavailable")
 
@@ -416,7 +416,7 @@ async def test_unknown_image_remove_is_404(
 async def test_volume_lifecycle_end_to_end(
     app: FastAPI, client: httpx.AsyncClient, owner: OwnerContext, helper: HelperClient
 ) -> None:
-    name = f"mypanel-test-{uuid4().hex[:10]}"
+    name = f"ownpanel-test-{uuid4().hex[:10]}"
     resp = await client.post(f"{DOCKER}/volumes", json={"name": name}, headers=csrf_headers(owner))
     assert resp.status_code == 200
     assert resp.json()["name"] == name

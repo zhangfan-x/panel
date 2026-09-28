@@ -29,12 +29,12 @@ from sqlalchemy import update
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
-from mypanel.app import create_app
-from mypanel.auth.deps import COOKIE_NAME
-from mypanel.db import run_migrations
-from mypanel.db.models import Session
-from mypanel.security import generate_token, hash_token
-from mypanel.terminal.manager import TerminalManager
+from ownpanel.app import create_app
+from ownpanel.auth.deps import COOKIE_NAME
+from ownpanel.db import run_migrations
+from ownpanel.db.models import Session
+from ownpanel.security import generate_token, hash_token
+from ownpanel.terminal.manager import TerminalManager
 
 SESSION_URL = f"{API}/terminal/session"
 WS_PATH = f"{API}/terminal/ws"

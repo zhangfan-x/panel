@@ -27,16 +27,16 @@ from fastapi import FastAPI
 from sqlalchemy import select
 from test_helper import running_helper
 
-from mypanel.config import Settings
-from mypanel.db.models import AuditLog, ComposeProject, Job
-from mypanel.errors import HelperActionError
-from mypanel.helper.actions import composesvc
-from mypanel.helper.actions.composesvc import EXIT_MARKER, _parse_ps_output
-from mypanel.ipc.client import HelperClient
-from mypanel.ipc.messages import HELPER_NOT_FOUND, HELPER_PATH_INVALID
+from ownpanel.config import Settings
+from ownpanel.db.models import AuditLog, ComposeProject, Job
+from ownpanel.errors import HelperActionError
+from ownpanel.helper.actions import composesvc
+from ownpanel.helper.actions.composesvc import EXIT_MARKER, _parse_ps_output
+from ownpanel.ipc.client import HelperClient
+from ownpanel.ipc.messages import HELPER_NOT_FOUND, HELPER_PATH_INVALID
 
 # Importing the actions package registers the compose.* (and files.*) handlers.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 COMPOSE = f"{API}/compose"
 

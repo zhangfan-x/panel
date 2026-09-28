@@ -13,8 +13,8 @@ import pytest
 from conftest import SettingsFactory
 from fastapi import FastAPI
 
-from mypanel.config import Settings
-from mypanel.events import EventBus
+from ownpanel.config import Settings
+from ownpanel.events import EventBus
 
 
 @pytest.fixture

@@ -11,8 +11,8 @@ import json
 
 import pytest
 
-from mypanel import errors
-from mypanel.errors import AppError, HelperActionError, RateLimitedError
+from ownpanel import errors
+from ownpanel.errors import AppError, HelperActionError, RateLimitedError
 
 # class -> (status, code, title); released values must never change.
 ERROR_CONTRACT: dict[type[AppError], tuple[int, str, str]] = {

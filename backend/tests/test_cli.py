@@ -1,4 +1,4 @@
-"""Tests for the ``mypanel`` CLI entry points (cli.py).
+"""Tests for the ``ownpanel`` CLI entry points (cli.py).
 
 test_bootstrap.py covers the service-level token logic; here we pin the
 CLI output format itself, which is where a leaked token would surface.
@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from mypanel import cli
+from ownpanel import cli
 
 
 def _write_dev_config(tmp_path: Path) -> Path:

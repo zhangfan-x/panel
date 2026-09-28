@@ -27,15 +27,15 @@ from fastapi import FastAPI
 from sqlalchemy import select
 from test_helper import running_helper
 
-from mypanel.config import Settings
-from mypanel.db.models import AuditLog
-from mypanel.errors import HelperActionError
-from mypanel.helper.actions import systemd as systemd_actions
-from mypanel.ipc.client import HelperClient
-from mypanel.ipc.fdpass import close_fds
+from ownpanel.config import Settings
+from ownpanel.db.models import AuditLog
+from ownpanel.errors import HelperActionError
+from ownpanel.helper.actions import systemd as systemd_actions
+from ownpanel.ipc.client import HelperClient
+from ownpanel.ipc.fdpass import close_fds
 
 # Importing the actions package registers every systemd.* action.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 SERVICES = f"{API}/services"
 

@@ -51,7 +51,7 @@ function mountPage(): ReturnType<typeof mount> {
 describe('SitesPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(api.listCerts).mockResolvedValue({ certs: [], cert_dir: '/etc/nginx/mypanel-certs' })
+    vi.mocked(api.listCerts).mockResolvedValue({ certs: [], cert_dir: '/etc/nginx/ownpanel-certs' })
     vi.mocked(api.getNginxStatus).mockResolvedValue({
       active: 'active',
       enabled: 'enabled',

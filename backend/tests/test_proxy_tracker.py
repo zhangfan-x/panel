@@ -13,7 +13,7 @@ from typing import Any
 
 from conftest import SettingsFactory
 
-from mypanel.proxy.tracker import CLOSED_MAX, ProxyTracker
+from ownpanel.proxy.tracker import CLOSED_MAX, ProxyTracker
 
 
 def _conn(conn_id: str, *, upload: int = 0, download: int = 0) -> dict[str, Any]:

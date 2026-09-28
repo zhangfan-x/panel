@@ -28,20 +28,20 @@ from starlette.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 from test_helper import running_helper
 
-from mypanel.app import create_app
-from mypanel.auth.deps import COOKIE_NAME
-from mypanel.config import Settings
-from mypanel.db import run_migrations
-from mypanel.errors import HelperActionError
-from mypanel.helper.actions import dockersvc
-from mypanel.ipc.client import HelperClient
-from mypanel.security import generate_token, hash_token
+from ownpanel.app import create_app
+from ownpanel.auth.deps import COOKIE_NAME
+from ownpanel.config import Settings
+from ownpanel.db import run_migrations
+from ownpanel.errors import HelperActionError
+from ownpanel.helper.actions import dockersvc
+from ownpanel.ipc.client import HelperClient
+from ownpanel.security import generate_token, hash_token
 
 # Importing the actions package registers every docker.* action.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 DOCKER = f"{API}/docker"
-UNKNOWN = "mypanel-test-no-such-object"
+UNKNOWN = "ownpanel-test-no-such-object"
 GOOD_ORIGIN = "http://testserver"
 STATS_FIELDS = {
     "read",
@@ -187,7 +187,7 @@ def settings(make_settings: SettingsFactory, helper_socket: Path) -> Settings:
 def broken_docker(monkeypatch: pytest.MonkeyPatch) -> None:
     """Force docker.* actions to see an unreachable daemon (in-process helper)."""
     monkeypatch.setattr(dockersvc, "_docker_client", None)
-    monkeypatch.setenv("DOCKER_HOST", "unix:///nonexistent/mypanel-docker.sock")
+    monkeypatch.setenv("DOCKER_HOST", "unix:///nonexistent/ownpanel-docker.sock")
 
 
 class TestHelperValidation:

@@ -44,7 +44,7 @@ async function handleSubmit(): Promise<void> {
     <el-card class="auth-card" shadow="never">
       <template #header>
         <div class="auth-card__header">
-          <h2 class="auth-card__title">登录 mypanel</h2>
+          <h2 class="auth-card__title">登录 ownpanel</h2>
           <p class="auth-card__subtitle">请输入管理员账号与密码</p>
         </div>
       </template>

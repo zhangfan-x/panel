@@ -23,13 +23,13 @@ from fastapi import FastAPI
 from sqlalchemy import select
 from test_helper import running_helper
 
-from mypanel.config import Settings
-from mypanel.db.models import AuditLog
-from mypanel.errors import HelperActionError
-from mypanel.ipc.client import HelperClient
+from ownpanel.config import Settings
+from ownpanel.db.models import AuditLog
+from ownpanel.errors import HelperActionError
+from ownpanel.ipc.client import HelperClient
 
 # Importing the actions package registers process.signal / process.renice.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 PROCESSES = f"{API}/processes"
 

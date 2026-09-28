@@ -12,8 +12,8 @@ from typing import Any
 import httpx
 from conftest import API, OWNER_USERNAME, OwnerContext
 
-import mypanel
-from mypanel.config import Settings
+import ownpanel
+from ownpanel.config import Settings
 
 SYSTEM = f"{API}/settings/system"
 PROFILE = f"{API}/settings/profile"
@@ -55,7 +55,7 @@ async def test_system_settings_shape(
     assert body["limits"]["session_idle_minutes"] == 30
     assert body["limits"]["audit_retention_days"] == 90
     assert body["docker"] == {"compose_root": str(settings.docker.compose_root)}
-    assert body["version"] == mypanel.__version__
+    assert body["version"] == ownpanel.__version__
 
 
 async def test_system_settings_leak_no_secrets(

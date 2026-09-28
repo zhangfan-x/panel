@@ -1,4 +1,4 @@
-// mypanel 前端 API 类型定义（M1 手写）。
+// ownpanel 前端 API 类型定义（M1 手写）。
 //
 // 说明：这些接口是前后端固定契约，字段名必须与后端 problem+json / 响应体一字不差。
 // 后续里程碑将由 `pnpm gen:api`（openapi-typescript 从 /api/openapi.json 生成 src/api/schema.d.ts）

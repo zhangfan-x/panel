@@ -27,12 +27,12 @@ from fastapi import FastAPI
 from sqlalchemy import func, select
 from test_helper import running_helper
 
-from mypanel.config import Settings
-from mypanel.db.models import AuditLog
-from mypanel.errors import HelperActionError
-from mypanel.helper.actions import nginx
-from mypanel.ipc.client import HelperClient
-from mypanel.ipc.messages import (
+from ownpanel.config import Settings
+from ownpanel.db.models import AuditLog
+from ownpanel.errors import HelperActionError
+from ownpanel.helper.actions import nginx
+from ownpanel.ipc.client import HelperClient
+from ownpanel.ipc.messages import (
     HELPER_CONFLICT,
     HELPER_INVALID_ARGS,
     HELPER_NOT_FOUND,
@@ -40,7 +40,7 @@ from mypanel.ipc.messages import (
 )
 
 # Importing the actions package registers the nginx.* (and files.*) handlers.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 WEBSITE = f"{API}/website"
 OPENSSL = "/usr/bin/openssl"

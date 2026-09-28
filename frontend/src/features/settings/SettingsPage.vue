@@ -372,7 +372,7 @@ const limitItems = computed<DisplayItem[]>(() => {
               </el-descriptions-item>
             </el-descriptions>
             <el-descriptions title="版本" :column="1" border class="settings-page__section">
-              <el-descriptions-item label="mypanel 版本">{{ system.version }}</el-descriptions-item>
+              <el-descriptions-item label="ownpanel 版本">{{ system.version }}</el-descriptions-item>
             </el-descriptions>
           </template>
         </el-tab-pane>

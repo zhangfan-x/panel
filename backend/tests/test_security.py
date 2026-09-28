@@ -11,8 +11,8 @@ import re
 
 import pytest
 
-from mypanel.errors import WeakPasswordError
-from mypanel.security import (
+from ownpanel.errors import WeakPasswordError
+from ownpanel.security import (
     DUMMY_HASH,
     derive_csrf_token,
     generate_token,

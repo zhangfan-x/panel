@@ -37,7 +37,7 @@ const statusQuery = useQuery({
 const errorMessage = computed(() => problemMessage(error.value, '获取站点列表失败'))
 const sites = computed(() => data.value?.sites ?? [])
 const certOptions = computed(() => certsQuery.data.value?.certs ?? [])
-const certDir = computed(() => certsQuery.data.value?.cert_dir ?? '/etc/nginx/mypanel-certs')
+const certDir = computed(() => certsQuery.data.value?.cert_dir ?? '/etc/nginx/ownpanel-certs')
 const status = computed(() => statusQuery.data.value)
 
 function problemCode(err: unknown): string | undefined {

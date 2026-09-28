@@ -2,7 +2,7 @@
 
 **Nothing here touches the host firewall.** The parsers run against captured
 ``ufw status`` text, argument validation never spawns a process, and every
-action test replaces :func:`mypanel.helper.actions.ufw._ufw` with a fake that
+action test replaces :func:`ownpanel.helper.actions.ufw._ufw` with a fake that
 records the argv it was handed. Because the helper server runs in-process (a
 thread, see ``test_helper.running_helper``) that patch is visible to its
 handler threads too, so the API-level tests are equally inert.
@@ -35,12 +35,12 @@ from fastapi import FastAPI
 from sqlalchemy import select, update
 from test_helper import running_helper
 
-from mypanel.config import Settings
-from mypanel.db.models import AuditLog, Session
-from mypanel.helper.actions import ufw
-from mypanel.helper.registry import ActionError
-from mypanel.ipc.client import HelperClient
-from mypanel.website.firewall import (
+from ownpanel.config import Settings
+from ownpanel.db.models import AuditLog, Session
+from ownpanel.helper.actions import ufw
+from ownpanel.helper.registry import ActionError
+from ownpanel.ipc.client import HelperClient
+from ownpanel.website.firewall import (
     covered_ports,
     endangered,
     newly_endangered,
@@ -48,7 +48,7 @@ from mypanel.website.firewall import (
     rule_ports,
 )
 
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 FIREWALL = f"{API}/website/firewall"
 

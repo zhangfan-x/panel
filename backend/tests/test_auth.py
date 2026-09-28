@@ -25,9 +25,9 @@ from conftest import (
 from fastapi import FastAPI
 from sqlalchemy import select, update
 
-from mypanel.auth.deps import COOKIE_NAME
-from mypanel.db.models import Session
-from mypanel.security import generate_token
+from ownpanel.auth.deps import COOKIE_NAME
+from ownpanel.db.models import Session
+from ownpanel.security import generate_token
 
 LOGIN = f"{API}/auth/login"
 SESSION_INFO = f"{API}/auth/session"
@@ -145,7 +145,7 @@ async def test_logout_revokes_session_and_clears_cookie(app, client, owner):
     resp = await client.post(LOGOUT, headers=csrf_headers(owner))
     assert resp.status_code == 204
     set_cookie = resp.headers["set-cookie"].lower()
-    assert "mypanel_session=" in set_cookie
+    assert "ownpanel_session=" in set_cookie
     assert "max-age=0" in set_cookie
 
     assert await db_scalar(app, select(Session.revoked_at)) is not None

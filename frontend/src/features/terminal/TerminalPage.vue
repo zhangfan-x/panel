@@ -67,7 +67,7 @@ async function connect(): Promise<void> {
   } catch (error) {
     const problem = (error as ApiError).problem
     if (problem?.code === 'terminal.unavailable') {
-      // 503：mypanel-terminal 服务不可达，展示禁用态而非假占位。
+      // 503：ownpanel-terminal 服务不可达，展示禁用态而非假占位。
       status.value = 'unavailable'
     } else if (problem?.status === 409) {
       status.value = 'idle'
@@ -296,7 +296,7 @@ onBeforeUnmount(() => {
         v-else-if="status === 'unavailable'"
         icon="warning"
         title="终端服务未运行"
-        sub-title="mypanel-terminal 服务不可用，请在主机上检查该服务状态后重试。"
+        sub-title="ownpanel-terminal 服务不可用，请在主机上检查该服务状态后重试。"
       >
         <template #extra>
           <el-button type="primary" @click="openGate">重试</el-button>

@@ -1,10 +1,10 @@
-"""Tests for `mypanelctl` (mypanel.ctl.cli): offline status checks and owner recovery.
+"""Tests for `ownpanelctl` (ownpanel.ctl.cli): offline status checks and owner recovery.
 
 No API app is started here (code-plan section 7: the tool must work while the
 panel is down). Each test writes a real config TOML under ``tmp_path``, creates
 the schema with ``run_migrations``, seeds rows through the stdlib sqlite3
 driver, and drives the CLI through the same argparse entry point the
-``mypanelctl`` console script uses.
+``ownpanelctl`` console script uses.
 """
 
 from __future__ import annotations
@@ -20,19 +20,19 @@ from typing import Any
 
 import pytest
 
-from mypanel.auth.service import AuthService
-from mypanel.config import Settings
-from mypanel.ctl import cli as ctl
-from mypanel.db import make_engine, make_sessionmaker, run_migrations
-from mypanel.errors import InvalidCredentialsError
-from mypanel.security.passwords import hash_password, verify_password
+from ownpanel.auth.service import AuthService
+from ownpanel.config import Settings
+from ownpanel.ctl import cli as ctl
+from ownpanel.db import make_engine, make_sessionmaker, run_migrations
+from ownpanel.errors import InvalidCredentialsError
+from ownpanel.security.passwords import hash_password, verify_password
 
 OWNER = "owner"
 OLD_PASSWORD = "OldPassword123!"
 # One Argon2 pass at import time, shared by every test that seeds the owner.
 OLD_PASSWORD_HASH = hash_password(OLD_PASSWORD)
 
-UNITS = ("mypanel-api", "mypanel-helper.socket", "mypanel-terminal.socket")
+UNITS = ("ownpanel-api", "ownpanel-helper.socket", "ownpanel-terminal.socket")
 
 
 def _ts(dt: datetime) -> str:
@@ -139,11 +139,11 @@ def db_snapshot(db_path: Path) -> tuple[Any, ...]:
 
 def run_ctl(monkeypatch: pytest.MonkeyPatch, *argv: str) -> int:
     """Invoke the real console-script entry point; return the process exit code."""
-    monkeypatch.setattr(sys, "argv", ["mypanelctl", *argv])
+    monkeypatch.setattr(sys, "argv", ["ownpanelctl", *argv])
     with pytest.raises(SystemExit) as excinfo:
         ctl.main()
     code = excinfo.value.code
-    assert isinstance(code, int), f"mypanelctl exited with a non-integer status: {code!r}"
+    assert isinstance(code, int), f"ownpanelctl exited with a non-integer status: {code!r}"
     return code
 
 
@@ -295,7 +295,7 @@ class TestStatus:
         assert code == 0
         out = capsys.readouterr().out
         assert f"config: ok ({env.config_path})" in out
-        assert re.search(r"^database: ok \(1 user\(s\), .*mypanel\.db\)$", out, re.MULTILINE)
+        assert re.search(r"^database: ok \(1 user\(s\), .*ownpanel\.db\)$", out, re.MULTILINE)
         assert "tls: skipped (dev_http)" in out
         for unit in UNITS:
             assert re.search(rf"^unit {re.escape(unit)}: \S+", out, re.MULTILINE)

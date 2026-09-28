@@ -20,13 +20,13 @@ from typing import Any
 import pytest
 from test_helper import running_helper
 
-from mypanel.errors import HelperActionError
-from mypanel.helper.actions import files as files_actions
-from mypanel.ipc.client import HelperClient
-from mypanel.ipc.fdpass import close_fds
+from ownpanel.errors import HelperActionError
+from ownpanel.helper.actions import files as files_actions
+from ownpanel.ipc.client import HelperClient
+from ownpanel.ipc.fdpass import close_fds
 
 # Importing the actions package registers every files.* handler.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 
 @pytest.fixture(scope="module")
@@ -168,7 +168,7 @@ def test_read_fd_missing_is_not_found(helper: HelperClient, tmp_path: Path) -> N
 def test_stage_and_install_creates_file(helper: HelperClient, tmp_path: Path) -> None:
     target = tmp_path / "new.conf"
     staged = stage(helper, str(tmp_path), b"key=value\n")
-    assert os.path.basename(staged).startswith(".mypanel-tmp-")
+    assert os.path.basename(staged).startswith(".ownpanel-tmp-")
     result = install(helper, staged, str(target))
     assert target.read_bytes() == b"key=value\n"
     assert result["etag"] == etag_of(target)
@@ -257,14 +257,14 @@ def test_open_write_errors(helper: HelperClient, tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("root", ["/proc", "/sys", "/dev"])
 def test_readonly_roots_deny_all_writes(helper: HelperClient, tmp_path: Path, root: str) -> None:
-    inside = f"{root}/mypanel-test"
+    inside = f"{root}/ownpanel-test"
     assert call_err(helper, "files.open_write", {"dir": root}) == "helper.denied"
     assert (
         call_err(
             helper,
             "files.install",
             {
-                "staged_path": f"{root}/.mypanel-tmp-x",
+                "staged_path": f"{root}/.ownpanel-tmp-x",
                 "target": inside,
                 "expected_etag": None,
                 "mode": None,

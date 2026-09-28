@@ -2,11 +2,11 @@
 #
 # 真实核心跑在 9090 且配置文件是 ~/.config/clash/config.yaml；订阅流水线会
 # 整体覆盖 clash_config 并触发 reload，所以走查绝不能用那两个值。这里指向
-# /tmp/mypanel-wt 下自起的第二个核心（控制器 39090，混合端口 37890）。
+# /tmp/ownpanel-wt 下自起的第二个核心（控制器 39090，混合端口 37890）。
 #
 # 用法：
-#   /home/zhangfan/.config/clash/cfw -d /tmp/mypanel-wt/clash &
-#   MYPANEL_CONFIG=backend/config.walkthrough-proxy.toml uv run mypanel serve
+#   /home/zhangfan/.config/clash/cfw -d /tmp/ownpanel-wt/clash &
+#   OWNPANEL_CONFIG=backend/config.walkthrough-proxy.toml uv run ownpanel serve
 
 [server]
 host = "127.0.0.1"
@@ -14,17 +14,17 @@ port = 30011
 dev_http = true
 
 [paths]
-data_dir = "/tmp/mypanel-wt/data"
-helper_socket = "/tmp/mypanel-wt/helper.sock"
-terminal_socket = "/tmp/mypanel-wt/terminal.sock"
+data_dir = "/tmp/ownpanel-wt/data"
+helper_socket = "/tmp/ownpanel-wt/helper.sock"
+terminal_socket = "/tmp/ownpanel-wt/terminal.sock"
 static_dir = "/home/zhangfan/work/panel/frontend/dist"
 
 [docker]
-compose_root = "/tmp/mypanel-wt/compose"
+compose_root = "/tmp/ownpanel-wt/compose"
 
 [proxy]
 clash_api = "http://127.0.0.1:39090"
-clash_config = "/tmp/mypanel-wt/clash/config.yaml"
+clash_config = "/tmp/ownpanel-wt/clash/config.yaml"
 # 故意指向一个不存在的 unit：走查里误点服务开关也动不了真实的 clash.service。
-clash_service = "mypanel-walkthrough-nonexistent.service"
+clash_service = "ownpanel-walkthrough-nonexistent.service"
 subscription_check_interval_s = 10.0

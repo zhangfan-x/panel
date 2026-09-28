@@ -23,13 +23,13 @@ from fastapi import FastAPI
 from sqlalchemy import select
 from test_helper import running_helper
 
-from mypanel.config import Settings
-from mypanel.db.models import AuditLog
-from mypanel.files.router import _CONTENT_MAX_BYTES, _unique_arc_name
-from mypanel.ipc.client import HelperClient
+from ownpanel.config import Settings
+from ownpanel.db.models import AuditLog
+from ownpanel.files.router import _CONTENT_MAX_BYTES, _unique_arc_name
+from ownpanel.ipc.client import HelperClient
 
 # Importing the actions package registers the files.* helper handlers.
-importlib.import_module("mypanel.helper.actions")
+importlib.import_module("ownpanel.helper.actions")
 
 FILES = f"{API}/files"
 UPLOAD_MAX = 1024  # module override of limits.upload_max_bytes
@@ -412,7 +412,7 @@ async def test_content_put_conflict_on_stale_etag(
     assert denied is not None
     assert denied.error_code == "conflict"
     # No staging litter left behind after the failed install.
-    assert not [n for n in os.listdir(ws) if n.startswith(".mypanel-tmp-")]
+    assert not [n for n in os.listdir(ws) if n.startswith(".ownpanel-tmp-")]
 
 
 async def test_content_get_too_large(
@@ -476,7 +476,7 @@ async def test_upload_too_large_is_413(
     assert_problem(resp, 413, "request.too_large")
     assert not target.exists()
     # The staging file was cleaned up after the aborted stream.
-    assert not [n for n in os.listdir(ws) if n.startswith(".mypanel-tmp-")]
+    assert not [n for n in os.listdir(ws) if n.startswith(".ownpanel-tmp-")]
 
 
 async def test_upload_requires_csrf(

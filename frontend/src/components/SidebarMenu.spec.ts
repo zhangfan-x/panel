@@ -46,6 +46,6 @@ describe('SidebarMenu', () => {
     expect(text).toContain('站点')
     expect(text).toContain('证书')
     // 品牌名
-    expect(text).toContain('mypanel')
+    expect(text).toContain('ownpanel')
   })
 })

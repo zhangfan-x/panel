@@ -15,7 +15,7 @@ import httpx
 import pytest
 from conftest import API, BASE_URL
 
-from mypanel.middleware import HostOriginMiddleware
+from ownpanel.middleware import HostOriginMiddleware
 
 HEALTH = f"{API}/health"
 LOGIN = f"{API}/auth/login"

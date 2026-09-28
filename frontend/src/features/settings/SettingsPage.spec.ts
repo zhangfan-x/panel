@@ -60,8 +60,8 @@ function systemSettings(): SystemSettings {
       host: '0.0.0.0',
       port: 25443,
       dev_http: false,
-      tls_cert: '/etc/mypanel/tls/cert.pem',
-      tls_key: '/etc/mypanel/tls/key.pem',
+      tls_cert: '/etc/ownpanel/tls/cert.pem',
+      tls_key: '/etc/ownpanel/tls/key.pem',
     },
     limits: {
       session_idle_minutes: 30,

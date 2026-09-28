@@ -28,14 +28,14 @@ from conftest import (
 from fastapi import FastAPI
 from sqlalchemy import func, insert, select, update
 
-from mypanel.auth.service import (
+from ownpanel.auth.service import (
     BOOTSTRAP_TOKEN_EXPIRES_AT_KEY,
     BOOTSTRAP_TOKEN_HASH_KEY,
     AuthService,
 )
-from mypanel.db.models import Setting, User
-from mypanel.errors import BootstrapDoneError
-from mypanel.security import generate_token, hash_token
+from ownpanel.db.models import Setting, User
+from ownpanel.errors import BootstrapDoneError
+from ownpanel.security import generate_token, hash_token
 
 STATE = f"{API}/bootstrap/state"
 OWNER = f"{API}/bootstrap/owner"
@@ -179,7 +179,7 @@ async def test_owner_success_sets_active_session_and_consumes_token(app, client,
     assert resp.json() == {"session_state": "active"}
 
     set_cookie = resp.headers["set-cookie"].lower()
-    assert "mypanel_session=" in set_cookie
+    assert "ownpanel_session=" in set_cookie
     assert "httponly" in set_cookie
     assert "samesite=strict" in set_cookie
     assert "path=/" in set_cookie

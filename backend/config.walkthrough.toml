@@ -9,8 +9,8 @@ dev_http = true
 
 [paths]
 data_dir = "/home/zhangfan/work/panel/backend/data-dev"
-helper_socket = "/tmp/mypanel-helper-dev.sock"
-terminal_socket = "/tmp/mypanel-terminal-dev.sock"
+helper_socket = "/tmp/ownpanel-helper-dev.sock"
+terminal_socket = "/tmp/ownpanel-terminal-dev.sock"
 static_dir = "/home/zhangfan/work/panel/frontend/dist"
 
 [docker]
@@ -18,7 +18,7 @@ compose_root = "/home/zhangfan/work/panel/backend/data-dev/compose"
 
 [website]
 nginx_dir = "/etc/nginx"
-cert_dir = "/etc/nginx/mypanel-certs"
+cert_dir = "/etc/nginx/ownpanel-certs"
 
 [proxy]
 clash_api = "http://127.0.0.1:9090"

@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from mypanel.config import SECRET_KEY_FILE, Settings
+from ownpanel.config import SECRET_KEY_FILE, Settings
 
 # --- dev_http / server validation -------------------------------------------------
 
@@ -179,7 +179,7 @@ def test_load_missing_file_yields_defaults(tmp_path):
     assert settings.server.host == "0.0.0.0"
     assert settings.server.port == 25443
     assert settings.server.dev_http is False
-    assert settings.paths.data_dir == Path("/opt/mypanel/data")
+    assert settings.paths.data_dir == Path("/opt/ownpanel/data")
     assert settings.limits.session_idle_minutes == 30
     assert settings.limits.login_max_attempts == 5
     assert settings.docker.compose_root == Path("/opt/compose")
@@ -196,19 +196,19 @@ def test_load_parses_toml_file(tmp_path):
     assert settings.limits.login_max_attempts == 3
     assert settings.limits.session_max_hours == 12  # untouched keys keep defaults
     assert settings.docker.compose_root == tmp_path / "compose"
-    assert settings.database_path == tmp_path / "data" / "mypanel.db"
-    assert settings.database_url == f"sqlite+aiosqlite:///{tmp_path / 'data' / 'mypanel.db'}"
+    assert settings.database_path == tmp_path / "data" / "ownpanel.db"
+    assert settings.database_url == f"sqlite+aiosqlite:///{tmp_path / 'data' / 'ownpanel.db'}"
 
 
-def test_load_honours_mypanel_config_env_var(tmp_path, monkeypatch):
+def test_load_honours_ownpanel_config_env_var(tmp_path, monkeypatch):
     cfg = _write_toml(tmp_path, "env-config.toml")
-    monkeypatch.setenv("MYPANEL_CONFIG", str(cfg))
+    monkeypatch.setenv("OWNPANEL_CONFIG", str(cfg))
     settings = Settings.load()
     assert settings.server.port == 30001
 
 
 def test_load_env_var_pointing_at_missing_file_yields_defaults(tmp_path, monkeypatch):
-    monkeypatch.setenv("MYPANEL_CONFIG", str(tmp_path / "gone.toml"))
+    monkeypatch.setenv("OWNPANEL_CONFIG", str(tmp_path / "gone.toml"))
     settings = Settings.load()
     assert settings.server.port == 25443
     assert settings.server.dev_http is False
